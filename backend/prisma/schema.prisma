@@ -12,3 +12,71 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id           Int               @id @default(autoincrement())
+  name         String
+  email        String            @unique
+  password     String
+  role         String            @default("member")
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  trainer      Trainer?          @relation("UserTrainer")
+  workouts     Workout[]         @relation("UserWorkouts")
+  routines     Routine[]         @relation("UserRoutines")
+  Trainer      Trainer[]         @relation("TrainerAssignments")
+  measurements UserMeasurement[] @relation("UserMeasurements")
+}
+
+model Trainer {
+  id          Int       @id @default(autoincrement())
+  expertise   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  userId      Int       @unique
+  user        User      @relation("UserTrainer", fields: [userId], references: [id])
+  workouts    Workout[] @relation("TrainerWorkouts")
+  assignments User[]    @relation("TrainerAssignments")
+}
+
+model Workout {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  type        String?
+  muscleGroup String?
+  difficulty  String?
+  isCustom    Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  userId      Int?      @map("user_id")
+  user        User?     @relation("UserWorkouts", fields: [userId], references: [id])
+  trainerId   Int?      @map("trainer_id")
+  trainer     Trainer?  @relation("TrainerWorkouts", fields: [trainerId], references: [id])
+  routines    Routine[] @relation("WorkoutRoutines")
+}
+
+model Routine {
+  id        Int      @id @default(autoincrement())
+  date      DateTime
+  duration  Int?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    Int?     @map("user_id")
+  user      User?    @relation("UserRoutines", fields: [userId], references: [id])
+  workoutId Int?     @map("workout_id")
+  workout   Workout? @relation("WorkoutRoutines", fields: [workoutId], references: [id])
+}
+
+model UserMeasurement {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  user       User     @relation("UserMeasurements", fields: [userId], references: [id])
+  height     Float?
+  weight     Float?
+  bodyFat    Float?
+  measuredAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
