@@ -14,17 +14,18 @@ datasource db {
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
-  name      String
-  email     String    @unique
-  password  String
-  role      String    @default("member")
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  trainer   Trainer?  @relation("UserTrainer")
-  workouts  Workout[] @relation("UserWorkouts")
-  routines  Routine[] @relation("UserRoutines")
-  Trainer   Trainer[] @relation("TrainerAssignments")
+  id           Int               @id @default(autoincrement())
+  name         String
+  email        String            @unique
+  password     String
+  role         String            @default("member")
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  trainer      Trainer?          @relation("UserTrainer")
+  workouts     Workout[]         @relation("UserWorkouts")
+  routines     Routine[]         @relation("UserRoutines")
+  Trainer      Trainer[]         @relation("TrainerAssignments")
+  measurements UserMeasurement[] @relation("UserMeasurements")
 }
 
 model Trainer {
@@ -66,4 +67,16 @@ model Routine {
   user      User?    @relation("UserRoutines", fields: [userId], references: [id])
   workoutId Int?     @map("workout_id")
   workout   Workout? @relation("WorkoutRoutines", fields: [workoutId], references: [id])
+}
+
+model UserMeasurement {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  user       User     @relation("UserMeasurements", fields: [userId], references: [id])
+  height     Float?
+  weight     Float?
+  bodyFat    Float?
+  measuredAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
