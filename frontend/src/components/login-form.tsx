@@ -15,7 +15,6 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -41,11 +40,11 @@ export function LoginForm({
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
                   <Link
-  to="/reset-password"
-  className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
->
-  reset password?
-</Link>
+                    to="/reset-password"
+                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                  >
+                    reset password?
+                  </Link>
                 </div>
                 <Input
                   id="password"
@@ -62,10 +61,7 @@ export function LoginForm({
             </div>
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?{" "}
-              <Link
-                to="/register"
-                className="text-primary cursor-pointer"
-              >
+              <Link to="/register" className="text-primary cursor-pointer">
                 Sign up
               </Link>
             </div>
