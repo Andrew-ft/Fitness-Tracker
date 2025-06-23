@@ -15,7 +15,6 @@ export function RegisterForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -76,10 +75,7 @@ export function RegisterForm({
             </div>
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?{" "}
-<Link
-                to="/login"
-                className="text-primary cursor-pointer"
-              >
+              <Link to="/login" className="text-primary cursor-pointer">
                 Sign in
               </Link>
             </div>

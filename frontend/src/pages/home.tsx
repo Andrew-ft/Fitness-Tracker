@@ -1,4 +1,3 @@
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Dumbbell } from "lucide-react";
