@@ -1,0 +1,154 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id                String         @id @default(uuid())
+    fullName          String
+    email             String         @unique
+    password          String
+    role              Role           @default(member)
+    assignedTrainer   User?          @relation(name: "AssignedTrainer", fields: [assignedTrainerId], references: [id], onDelete: SetNull)
+    assignedTrainerId String?
+    members           User[]         @relation(name: "AssignedTrainer")
+    workouts          Workout[]      @relation(name: "CreatedWorkouts")
+    routines          Routine[]      @relation(name: "CreatedRoutines")
+    notifications     Notification[] @relation(name: "UserNotifications")
+    savedWorkouts     Workout[]      @relation(name: "SavedWorkouts")
+    savedRoutines     Routine[]      @relation(name: "SavedRoutines")
+    progress          Progress[]     @relation(name: "UserProgress")
+    weight            Float?
+    height            Float?
+    bodyFat           Float?
+    waist             Float?
+    chest             Float?
+    arms              Float?
+    legs              Float?
+    measurementDate   DateTime?
+    createdAt         DateTime       @default(now())
+
+    @@index([email])
+}
+
+model Workout {
+    id             String           @id @default(uuid())
+    name           String
+    description    String
+    muscleGroup    MuscleGroup
+    difficulty     String
+    caloriesBurned Int
+    createdBy      User?            @relation(name: "CreatedWorkouts", fields: [createdById], references: [id], onDelete: SetNull)
+    createdById    String?
+    routines       Routine[]
+    savedBy        User[]           @relation(name: "SavedWorkouts")
+    createdAt      DateTime         @default(now())
+    RoutineWorkout RoutineWorkout[]
+    Progress       Progress[]
+}
+
+model Routine {
+    id             String           @id @default(uuid())
+    name           String
+    workouts       Workout[]
+    createdBy      User?            @relation(name: "CreatedRoutines", fields: [createdById], references: [id], onDelete: SetNull)
+    createdById    String?
+    visibility     Visibility       @default(public)
+    time           Int
+    caloriesBurned Int
+    createdAt      DateTime         @default(now())
+    savedBy        User[]           @relation(name: "SavedRoutines")
+    RoutineWorkout RoutineWorkout[]
+}
+
+model RoutineWorkout {
+    id        String  @id @default(uuid())
+    routine   Routine @relation(fields: [routineId], references: [id], onDelete: Cascade)
+    routineId String
+    workout   Workout @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+    workoutId String
+    sets      Int?
+    reps      Int?
+}
+
+model Notification {
+    id        String           @id @default(uuid())
+    user      User             @relation(name: "UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+    userId    String
+    type      NotificationType
+    message   String
+    read      Boolean          @default(false)
+    createdAt DateTime         @default(now())
+}
+
+model Progress {
+    id        String   @id @default(uuid())
+    user      User     @relation(name: "UserProgress", fields: [userId], references: [id], onDelete: Cascade)
+    userId    String
+    workout   Workout? @relation(fields: [workoutId], references: [id], onDelete: SetNull)
+    workoutId String?
+    date      DateTime
+    notes     String?
+    createdAt DateTime @default(now())
+
+    @@index([userId, date])
+}
+
+enum Role {
+    member
+    trainer
+    admin
+}
+
+enum MuscleGroup {
+    all
+    chest
+    back
+    shoulders
+    arms
+    core
+    legs
+    cardio
+}
+
+enum Visibility {
+    public
+    private
+}
+
+enum NotificationType {
+    login
+    register
+    new_workout
+    new_routine
+    assign_trainer
+}
+
+enum SubMuscle {
+    upper_chest
+    middle_chest
+    lower_chest
+    upper_back
+    lats
+    lower_back
+    front_delts
+    side_delts
+    rear_delts
+    biceps_long_head
+    biceps_short_head
+    brachialis
+    triceps_long_head
+    triceps_lateral_head
+    triceps_medial_head
+    upper_abs
+    lower_abs
+    obliques
+    quads
+    hamstrings
+    glutes
+    calves
+}
