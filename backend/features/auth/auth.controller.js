@@ -1,5 +1,5 @@
 import authService from "./auth.service.js";
-import createToken from "../../middlewares/createToken.js";
+import createToken from "../../helpers/createToken.js";
 
 const register = async (req, res) => {
   try {
