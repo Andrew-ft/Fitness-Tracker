@@ -1,6 +1,5 @@
 import prisma from "../../config/prisma.js";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import { Role } from "@prisma/client";
 
 const registerUser = async (fullName, email, password, role) => {
