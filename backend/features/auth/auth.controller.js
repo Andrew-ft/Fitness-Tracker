@@ -10,7 +10,7 @@ const register = async (req, res) => {
       password,
       role
     );
-    let token = createToken(user.id);
+    let token = createToken(user.id, user.role);
     res.cookie("jwt", token, {
       httpOnly: true,
       maxAge: 3 * 24 * 60 * 60 * 1000,
@@ -28,7 +28,7 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await authService.loginUser(email, password);
-    let token = createToken(user.id);
+    let token = createToken(user.id, user.role);
     res.cookie("jwt", token, {
       httpOnly: true,
       maxAge: 3 * 24 * 60 * 60 * 1000,
