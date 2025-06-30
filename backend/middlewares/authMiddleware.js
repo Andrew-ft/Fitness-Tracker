@@ -8,6 +8,7 @@ const authMiddleware = (req, res, next) => {
         return res.status(401).json({ error: "Unauthorized access" });
       } else {
         req.userId = decodedValue.id;
+        req.userRole = decodedValue.role;
         next();
       }
     });
