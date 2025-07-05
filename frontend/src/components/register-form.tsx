@@ -36,9 +36,8 @@ export function RegisterForm({
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Validate email format real time
   useEffect(() => {
-    if (!email.trim()) {
+    if (email === "") {
       setEmailError(null);
     } else if (!validateEmail(email)) {
       setEmailError("Please enter a valid email address.");
@@ -47,9 +46,8 @@ export function RegisterForm({
     }
   }, [email]);
 
-  // Validate password length and confirm password match
   useEffect(() => {
-    if (!password.trim()) {
+    if (password === "") {
       setPasswordError(null);
     } else if (password.length < 6) {
       setPasswordError("Password must be at least 6 characters.");
@@ -66,9 +64,8 @@ export function RegisterForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.clear(); // Optional: clear old logs
 
-    // Reset all errors before validation
+    // Clear all errors at the start of submission
     setFullNameError(null);
     setEmailError(null);
     setPasswordError(null);
@@ -96,7 +93,9 @@ export function RegisterForm({
       hasError = true;
     }
 
-    if (hasError) return;
+    if (hasError) {
+      return;
+    }
 
     setLoading(true);
 
@@ -112,14 +111,12 @@ export function RegisterForm({
         setEmail("");
         setPassword("");
         setConfirmPassword("");
-
-        // Clear errors before navigating
         setFullNameError(null);
         setEmailError(null);
         setPasswordError(null);
         setConfirmPasswordError(null);
-
         navigate("/login");
+        return;
       }
     } catch (err: any) {
       console.log("Register error:", err.response?.data);
@@ -146,7 +143,6 @@ export function RegisterForm({
         <CardContent>
           <form onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
-              {/* Full Name */}
               <div className="grid gap-3">
                 <Label htmlFor="fullname">Full Name</Label>
                 <Input
@@ -160,15 +156,19 @@ export function RegisterForm({
                   }}
                   aria-describedby="fullname-error"
                   aria-invalid={!!fullNameError}
+                  className={cn(fullNameError && "")}
                 />
                 {fullNameError && (
-                  <p id="fullname-error" className="text-red-500 text-sm" role="alert">
+                  <p
+                    id="fullname-error"
+                    className="text-red-500 text-sm"
+                    role="alert"
+                  >
                     {fullNameError}
                   </p>
                 )}
               </div>
 
-              {/* Email */}
               <div className="grid gap-3">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -182,15 +182,19 @@ export function RegisterForm({
                   }}
                   aria-describedby="email-error"
                   aria-invalid={!!emailError}
+                  className={cn(emailError && "")}
                 />
                 {emailError && (
-                  <p id="email-error" className="text-red-500 text-sm" role="alert">
+                  <p
+                    id="email-error"
+                    className="text-red-500 text-sm"
+                    role="alert"
+                  >
                     {emailError}
                   </p>
                 )}
               </div>
 
-              {/* Password */}
               <div className="grid gap-3">
                 <Label htmlFor="password">Password</Label>
                 <Input
@@ -204,15 +208,19 @@ export function RegisterForm({
                   }}
                   aria-describedby="password-error"
                   aria-invalid={!!passwordError}
+                  className={cn(passwordError && "")}
                 />
                 {passwordError && (
-                  <p id="password-error" className="text-red-500 text-sm" role="alert">
+                  <p
+                    id="password-error"
+                    className="text-red-500 text-sm"
+                    role="alert"
+                  >
                     {passwordError}
                   </p>
                 )}
               </div>
 
-              {/* Confirm Password */}
               <div className="grid gap-3">
                 <Label htmlFor="confirm-password">Confirm Password</Label>
                 <Input
@@ -226,15 +234,19 @@ export function RegisterForm({
                   }}
                   aria-describedby="confirm-password-error"
                   aria-invalid={!!confirmPasswordError}
+                  className={cn(confirmPasswordError && "")}
                 />
                 {confirmPasswordError && (
-                  <p id="confirm-password-error" className="text-red-500 text-sm" role="alert">
+                  <p
+                    id="confirm-password-error"
+                    className="text-red-500 text-sm"
+                    role="alert"
+                  >
                     {confirmPasswordError}
                   </p>
                 )}
               </div>
 
-              {/* Submit */}
               <div className="flex flex-col gap-3">
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Creating..." : "Create Account"}
@@ -242,7 +254,6 @@ export function RegisterForm({
               </div>
             </div>
 
-            {/* Footer link */}
             <div className="mt-4 text-center text-sm">
               Already have an account?{" "}
               <Link to="/login" className="text-primary cursor-pointer">
