@@ -97,15 +97,17 @@ export function LoginForm({
 
         localStorage.setItem("token", token);
         localStorage.setItem("role", user.role);
+        localStorage.setItem("name", user.fullName);
+        localStorage.setItem("email", user.email);
 
         setError(null);
 
         if (user.role === "admin") {
-          navigate("/admin-dashboard");
+          navigate("/admin");
         } else if (user.role === "trainer") {
-          navigate("/trainer-dashboard");
+          navigate("/trainer");
         } else if (user.role === "member") {
-          navigate("/member-dashboard");
+          navigate("/member");
         } else {
           navigate("/dashboard");
         }
@@ -117,8 +119,8 @@ export function LoginForm({
 
       setError(
         err.response?.data?.error ||
-        err.response?.data?.errors?.password ||
-        "Login failed."
+          err.response?.data?.errors?.password ||
+          "Login failed."
       );
     } finally {
       setLoading(false);
