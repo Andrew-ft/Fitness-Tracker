@@ -7,18 +7,18 @@ import ResetPassword from "./pages/resetPassword.tsx";
 import NotFound from "./pages/notFound.tsx";
 
 import AdminPage from "./pages/admin-page.tsx";
-import AdminDashboard from "./components/admin-dashboard.tsx";
-import AdminWorkout from "./components/admin-workout.tsx";
-import AdminRoutines from "./components/admin-routines.tsx";
-import AdminMembers from "./components/admin-member.tsx";
-import AdminTrainers from "./components/admin-trainer.tsx";
-import AdminProfile from "./components/admin-profile.tsx";
+import AdminDashboard from "./components/admin/admin-dashboard.tsx";
+import AdminWorkout from "./components/admin/admin-workout.tsx";
+import AdminRoutines from "./components/admin/admin-routines.tsx";
+import AdminMembers from "./components/admin/admin-member.tsx";
+import AdminTrainers from "./components/admin/admin-trainer.tsx";
+import AdminProfile from "./components/admin/admin-profile.tsx";
 
-import TrainerDashboard from "./components/trainer-dashboard.tsx";
-import TrainerWorkout from "./components/trainer.workout.tsx";
-import TrainerRoutines from "./components/trainer-routine.tsx";
-import TrainerMembers from "./components/trainer-member.tsx";
-import TrainerProfile from "./components/trainer-profile.tsx";
+import TrainerDashboard from "./components/trainer/trainer-dashboard.tsx";
+import TrainerWorkout from "./components/trainer/trainer-workout.tsx";
+import TrainerRoutines from "./components/trainer/trainer-routine.tsx";
+import TrainerMembers from "./components/trainer/trainer-member.tsx";
+import TrainerProfile from "./components/trainer/trainer-profile.tsx";
 
 import MemberDashboard from "./pages/member-dashboard.tsx";
 import MemberWorkout from "./pages/member-workout.tsx";
