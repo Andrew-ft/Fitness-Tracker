@@ -16,7 +16,7 @@ model User {
     assignedTrainer   User?          @relation(name: "AssignedTrainer", fields: [assignedTrainerId], references: [id], onDelete: SetNull)
     assignedTrainerId String?
     members           User[]         @relation(name: "AssignedTrainer")
-    workouts          Workout[]      @relation(name: "CreatedWorkouts")
+    workouts          Workout[]      @relation(name: "CreatedWorkouts") 
     routines          Routine[]      @relation(name: "CreatedRoutines")
     notifications     Notification[] @relation(name: "UserNotifications")
     savedWorkouts     Workout[]      @relation(name: "SavedWorkouts")

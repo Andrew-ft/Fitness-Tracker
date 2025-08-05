@@ -11,6 +11,11 @@ const registerUser = async (fullName, email, password, role) => {
     throw new Error("User already exists");
   }
 
+  // checking password
+  if (password.length < 6) {
+    throw new Error("Password must be at least 6 characters long");
+  }
+
   // hashing the password
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
