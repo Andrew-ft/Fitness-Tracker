@@ -37,8 +37,6 @@ authRouter.post(
       .withMessage("Valid email is required"),
     body("password")
       .notEmpty()
-      .isLength({ min: 6 })
-      .withMessage("Password must be at least 6 characters long"),
   ],
   handleErrorMessage,
   authController.login
