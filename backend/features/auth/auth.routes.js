@@ -28,19 +28,33 @@ authRouter.post(
   handleErrorMessage,
   authController.register
 );
+
 authRouter.post(
   "/login",
   [
-    body("email")
-      .notEmpty()
-      .isEmail()
-      .withMessage("Valid email is required"),
-    body("password")
-      .notEmpty()
+    body("email").notEmpty().isEmail().withMessage("Valid email is required"),
+    body("password").notEmpty(),
   ],
   handleErrorMessage,
   authController.login
 );
+
+authRouter.post(
+  "/reset-password",
+  [
+    body("email").isEmail().withMessage("Valid email is required"),
+    body("oldPassword").notEmpty().withMessage("Old password is required"),
+    body("newPassword")
+      .isLength({ min: 6 })
+      .withMessage("New password must be at least 6 characters"),
+    body("confirmPassword")
+      .custom((value, { req }) => value === req.body.newPassword)
+      .withMessage("Passwords do not match"),
+  ],
+  handleErrorMessage,
+  authController.resetPassword
+);
+
 authRouter.post("/logout", authController.logout);
 
 export default authRouter;
