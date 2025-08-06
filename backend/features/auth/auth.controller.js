@@ -47,10 +47,22 @@ const logout = async (req, res) => {
   return res.json({ msg: "User Logged out" });
 };
 
+const resetPassword = async (req, res) => { 
+  try {
+    const { email, oldPassword, newPassword } = req.body;
+    const result = await authService.resetPassword(email, oldPassword, newPassword);
+    return res.status(200).json({ success: true, message: result.message });
+  } catch (e) {
+    console.error(e.message);
+    return res.status(400).json({ error: e.message });
+  }
+}
+
 const authController = {
   register,
   login,
   logout,
+  resetPassword,
 };
 
 export default authController;
