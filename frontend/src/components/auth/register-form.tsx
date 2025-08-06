@@ -22,83 +22,87 @@ export function RegisterForm({
   ...props
 }: React.ComponentProps<"div">) {
   const [fullName, setFullName] = useState("");
-  const [fullNameError, setFullNameError] = useState<string | null>(null);
-
   const [email, setEmail] = useState("");
-  const [emailError, setEmailError] = useState<string | null>(null);
-
   const [password, setPassword] = useState("");
-  const [passwordError, setPasswordError] = useState<string | null>(null);
-
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [confirmPasswordError, setConfirmPasswordError] = useState<string | null>(null);
+
+  const [errors, setErrors] = useState<Record<string, string | null>>({
+    fullName: null,
+    email: null,
+    password: null,
+    confirmPassword: null,
+  });
 
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (email === "") {
-      setEmailError(null);
-    } else if (!validateEmail(email)) {
-      setEmailError("Please enter a valid email address.");
+    if (email && !validateEmail(email)) {
+      setErrors((prev) => ({ ...prev, email: "Please enter a valid email address." }));
     } else {
-      setEmailError(null);
+      setErrors((prev) => ({ ...prev, email: null }));
     }
   }, [email]);
 
   useEffect(() => {
-    if (password === "") {
-      setPasswordError(null);
-    } else if (password.length < 6) {
-      setPasswordError("Password must be at least 6 characters.");
+    if (password && password.length < 6) {
+      setErrors((prev) => ({ ...prev, password: "Password must be at least 6 characters." }));
     } else {
-      setPasswordError(null);
+      setErrors((prev) => ({ ...prev, password: null }));
     }
 
     if (confirmPassword && password !== confirmPassword) {
-      setConfirmPasswordError("Passwords do not match.");
+      setErrors((prev) => ({ ...prev, confirmPassword: "Passwords do not match." }));
     } else {
-      setConfirmPasswordError(null);
+      setErrors((prev) => ({ ...prev, confirmPassword: null }));
     }
   }, [password, confirmPassword]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Clear all errors at the start of submission
-    setFullNameError(null);
-    setEmailError(null);
-    setPasswordError(null);
-    setConfirmPasswordError(null);
-
     let hasError = false;
+    const newErrors: typeof errors = {
+      fullName: null,
+      email: null,
+      password: null,
+      confirmPassword: null,
+    };
 
     if (!fullName.trim()) {
-      setFullNameError("This field is required.");
+      newErrors.fullName = "This field is required.";
       hasError = true;
     }
 
     if (!email.trim()) {
-      setEmailError("This field is required.");
+      newErrors.email = "This field is required.";
+      hasError = true;
+    } else if (!validateEmail(email)) {
+      newErrors.email = "Please enter a valid email address.";
       hasError = true;
     }
 
     if (!password.trim()) {
-      setPasswordError("This field is required.");
+      newErrors.password = "This field is required.";
+      hasError = true;
+    } else if (password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters.";
       hasError = true;
     }
 
     if (!confirmPassword.trim()) {
-      setConfirmPasswordError("This field is required.");
+      newErrors.confirmPassword = "This field is required.";
+      hasError = true;
+    } else if (password !== confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match.";
       hasError = true;
     }
 
-    if (hasError) {
-      return;
-    }
+    setErrors(newErrors);
+
+    if (hasError) return;
 
     setLoading(true);
-
     try {
       const res = await API.post("/auth/register", {
         fullName,
@@ -111,21 +115,29 @@ export function RegisterForm({
         setEmail("");
         setPassword("");
         setConfirmPassword("");
-        setFullNameError(null);
-        setEmailError(null);
-        setPasswordError(null);
-        setConfirmPasswordError(null);
+        setErrors({ fullName: null, email: null, password: null, confirmPassword: null });
         navigate("/login");
-        return;
       }
     } catch (err: any) {
       console.log("Register error:", err.response?.data);
+
+      const backendError = err.response?.data?.errors;
       const backendMessage =
         err.response?.data?.message ||
         err.response?.data?.error ||
-        "Email already exists";
+        "Something went wrong";
 
-      setEmailError(backendMessage);
+      const newErrors = { ...errors };
+
+      if (backendError) {
+        for (const key in backendError) {
+          newErrors[key] = backendError[key]?.msg || backendError[key];
+        }
+      } else if (typeof backendMessage === "string") {
+        newErrors.email = backendMessage;
+      }
+
+      setErrors(newErrors);
     } finally {
       setLoading(false);
     }
@@ -136,13 +148,12 @@ export function RegisterForm({
       <Card>
         <CardHeader>
           <CardTitle>Create account</CardTitle>
-          <CardDescription>
-            Fill in your details to get started.
-          </CardDescription>
+          <CardDescription>Fill in your details to get started.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
+              {/* Full Name */}
               <div className="grid gap-3">
                 <Label htmlFor="fullname">Full Name</Label>
                 <Input
@@ -152,23 +163,19 @@ export function RegisterForm({
                   value={fullName}
                   onChange={(e) => {
                     setFullName(e.target.value);
-                    setFullNameError(null);
+                    setErrors((prev) => ({ ...prev, fullName: null }));
                   }}
                   aria-describedby="fullname-error"
-                  aria-invalid={!!fullNameError}
-                  className={cn(fullNameError && "")}
+                  aria-invalid={!!errors.fullName}
                 />
-                {fullNameError && (
-                  <p
-                    id="fullname-error"
-                    className="text-red-500 text-sm"
-                    role="alert"
-                  >
-                    {fullNameError}
+                {errors.fullName && (
+                  <p id="fullname-error" className="text-red-500 text-sm" role="alert">
+                    {errors.fullName}
                   </p>
                 )}
               </div>
 
+              {/* Email */}
               <div className="grid gap-3">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -178,23 +185,19 @@ export function RegisterForm({
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
-                    setEmailError(null);
+                    setErrors((prev) => ({ ...prev, email: null }));
                   }}
                   aria-describedby="email-error"
-                  aria-invalid={!!emailError}
-                  className={cn(emailError && "")}
+                  aria-invalid={!!errors.email}
                 />
-                {emailError && (
-                  <p
-                    id="email-error"
-                    className="text-red-500 text-sm"
-                    role="alert"
-                  >
-                    {emailError}
+                {errors.email && (
+                  <p id="email-error" className="text-red-500 text-sm" role="alert">
+                    {errors.email}
                   </p>
                 )}
               </div>
 
+              {/* Password */}
               <div className="grid gap-3">
                 <Label htmlFor="password">Password</Label>
                 <Input
@@ -204,23 +207,19 @@ export function RegisterForm({
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
-                    setPasswordError(null);
+                    setErrors((prev) => ({ ...prev, password: null }));
                   }}
                   aria-describedby="password-error"
-                  aria-invalid={!!passwordError}
-                  className={cn(passwordError && "")}
+                  aria-invalid={!!errors.password}
                 />
-                {passwordError && (
-                  <p
-                    id="password-error"
-                    className="text-red-500 text-sm"
-                    role="alert"
-                  >
-                    {passwordError}
+                {errors.password && (
+                  <p id="password-error" className="text-red-500 text-sm" role="alert">
+                    {errors.password}
                   </p>
                 )}
               </div>
 
+              {/* Confirm Password */}
               <div className="grid gap-3">
                 <Label htmlFor="confirm-password">Confirm Password</Label>
                 <Input
@@ -230,35 +229,28 @@ export function RegisterForm({
                   value={confirmPassword}
                   onChange={(e) => {
                     setConfirmPassword(e.target.value);
-                    setConfirmPasswordError(null);
+                    setErrors((prev) => ({ ...prev, confirmPassword: null }));
                   }}
                   aria-describedby="confirm-password-error"
-                  aria-invalid={!!confirmPasswordError}
-                  className={cn(confirmPasswordError && "")}
+                  aria-invalid={!!errors.confirmPassword}
                 />
-                {confirmPasswordError && (
-                  <p
-                    id="confirm-password-error"
-                    className="text-red-500 text-sm"
-                    role="alert"
-                  >
-                    {confirmPasswordError}
+                {errors.confirmPassword && (
+                  <p id="confirm-password-error" className="text-red-500 text-sm" role="alert">
+                    {errors.confirmPassword}
                   </p>
                 )}
               </div>
 
-              <div className="flex flex-col gap-3">
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Creating..." : "Create Account"}
-                </Button>
-              </div>
-            </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "Creating..." : "Create Account"}
+              </Button>
 
-            <div className="mt-4 text-center text-sm">
-              Already have an account?{" "}
-              <Link to="/login" className="text-primary cursor-pointer">
-                Sign in
-              </Link>
+              <div className="mt-4 text-center text-sm">
+                Already have an account?{" "}
+                <Link to="/login" className="text-primary cursor-pointer">
+                  Sign in
+                </Link>
+              </div>
             </div>
           </form>
         </CardContent>

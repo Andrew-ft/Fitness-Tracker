@@ -11,6 +11,11 @@ const registerUser = async (fullName, email, password, role) => {
     throw new Error("User already exists");
   }
 
+  // checking password
+  if (password.length < 6) {
+    throw new Error("Password must be at least 6 characters long");
+  }
+
   // hashing the password
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
@@ -43,9 +48,34 @@ const loginUser = async (email, password) => {
     return user;
 };
 
+const resetPassword = async (email, oldPassword, newPassword) => {
+  const user = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  const isOldPasswordValid = await bcrypt.compare(oldPassword, user.password);
+  if (!isOldPasswordValid) {
+    throw new Error("Old password is incorrect");
+  }
+
+  const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+  await prisma.user.update({
+    where: { email },
+    data: { password: hashedNewPassword },
+  });
+
+  return { message: "Password updated successfully" };
+}
+
 const authService = {
   registerUser,
   loginUser,
+  resetPassword,
 };
 
 export default authService;

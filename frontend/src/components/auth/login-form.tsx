@@ -116,11 +116,14 @@ export function LoginForm({
       if (process.env.NODE_ENV === "development") {
         console.error("Login error:", err.response?.data);
       }
+      const passwordError = err.response?.data?.errors?.password;
+      const passwordErrorMsg =
+        typeof passwordError === "object" && passwordError?.msg
+          ? passwordError.msg
+          : passwordError;
 
       setError(
-        err.response?.data?.error ||
-          err.response?.data?.errors?.password ||
-          "Login failed."
+        err.response?.data?.error || passwordErrorMsg || "Login failed."
       );
     } finally {
       setLoading(false);
