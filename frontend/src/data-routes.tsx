@@ -1,24 +1,26 @@
 import { createBrowserRouter } from "react-router-dom";
 
 import Home from "./pages/home.tsx";
-import Register from "./pages/register.tsx";
-import Login from "./pages/login.tsx";
-import ResetPassword from "./pages/resetPassword.tsx";
+import Register from "./pages/auth/register.tsx";
+import Login from "./pages/auth/login.tsx";
+import ResetPassword from "./pages/auth/resetPassword.tsx";
 import NotFound from "./pages/notFound.tsx";
 
-import AdminPage from "./pages/admin-page.tsx";
-import AdminDashboard from "./components/admin/admin-dashboard.tsx";
-import AdminWorkout from "./components/admin/admin-workout.tsx";
-import AdminRoutines from "./components/admin/admin-routines.tsx";
-import AdminMembers from "./components/admin/admin-member.tsx";
-import AdminTrainers from "./components/admin/admin-trainer.tsx";
-import AdminProfile from "./components/admin/admin-profile.tsx";
+import AdminPage from "./pages/admin/admin-page.tsx";
+import AdminDashboard from "./components/admin/adminDashboard/admin-dashboard.tsx";
+import AdminWorkout from "./components/admin/adminWorkout/admin-workout.tsx";
+import AdminRoutines from "./components/admin/adminRoutine/admin-routines.tsx";
+import AdminMembers from "./components/admin/adminMember/admin-member.tsx";
+import AdminTrainers from "./components/admin/adminTrainer/admin-trainer.tsx";
+import AdminProfile from "./components/admin/adminProfile/admin-profile.tsx";
+import AdminAddTrainers from "./components/admin/adminTrainer/admin-addtrainer.tsx";
+import AdminAddMember from "./components/admin/adminMember/admin-addmember.tsx";
 
-import TrainerDashboard from "./components/trainer/trainer-dashboard.tsx";
-import TrainerWorkout from "./components/trainer/trainer-workout.tsx";
-import TrainerRoutines from "./components/trainer/trainer-routine.tsx";
-import TrainerMembers from "./components/trainer/trainer-member.tsx";
-import TrainerProfile from "./components/trainer/trainer-profile.tsx";
+import TrainerDashboard from "./components/trainer/trainerDashboard/trainer-dashboard.tsx";
+import TrainerWorkout from "./components/trainer/trainerWorkout/trainer-workout.tsx";
+import TrainerRoutines from "./components/trainer/trainerRoutine/trainer-routine.tsx";
+import TrainerMembers from "./components/trainer/trainerMember/trainer-member.tsx";
+import TrainerProfile from "./components/trainer/trainerProfile/trainer-profile.tsx";
 
 import MemberDashboard from "./pages/member-dashboard.tsx";
 import MemberWorkout from "./pages/member-workout.tsx";
@@ -28,6 +30,12 @@ import MemberProfile from "./pages/member-profile.tsx";
 import PrivateWrapper from "./components/routing/PrivateWrapper.tsx";
 import TrainerPage from "./pages/trainer-page.tsx";
 import MemberPage from "./pages/member-page.tsx";
+import AdminAddWorkout from "./components/admin/adminWorkout/admin-addworkout.tsx";
+import AdminAddRoutine from "./components/admin/adminRoutine/admin-addroutine.tsx";
+import AdminTrainerDetails from "./components/admin/adminTrainer/admin-trainerdetails.tsx";
+import AdminMemberDetails from "./components/admin/adminMember/admin-memberdetails.tsx";
+import AdminWorkoutDetails from "./components/admin/adminWorkout/admin-workoutdetails.tsx";
+import AdminRoutineDetails from "./components/admin/adminRoutine/admin-routinedetails.tsx";
 
 export const router = createBrowserRouter([
   {
@@ -57,9 +65,17 @@ export const router = createBrowserRouter([
       { index: true, element: <AdminDashboard /> },
       { path: "dashboard", element: <AdminDashboard /> },
       { path: "workouts", element: <AdminWorkout /> },
+      { path: "workouts/add", element: <AdminAddWorkout /> },
+      { path: "workouts/:id", element: <AdminWorkoutDetails /> },
       { path: "routines", element: <AdminRoutines /> },
+      { path: "routines/add", element: <AdminAddRoutine /> },
+      { path: "routines/:id", element: <AdminRoutineDetails /> },
       { path: "members", element: <AdminMembers /> },
+      { path: "members/add", element: <AdminAddMember /> },
+      { path: "members/:id", element: <AdminMemberDetails /> },
       { path: "trainers", element: <AdminTrainers /> },
+      { path: "trainers/add", element: <AdminAddTrainers /> },
+      { path: "trainers/:id", element: <AdminTrainerDetails /> },
       { path: "profile", element: <AdminProfile /> },
     ],
   },

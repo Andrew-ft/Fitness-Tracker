@@ -108,10 +108,6 @@ export default function Admin() {
             </Breadcrumb>
           </div>
         </header>
-
-        <div className="p-4">
-          <h1 className="text-2xl font-bold">This is admin page.</h1>
-        </div>
         <div className="p-4">
           <Outlet />
         </div>
