@@ -1,6 +1,6 @@
-import { RegisterForm } from "../components/auth/register-form";
+import { ResetPasswordForm } from "../../components/auth/reset-password";
 
-export default function Register() {
+export default function ResetPassword() {
   return (
     <div className="flex flex-col min-h-svh w-full items-center justify-center p-6 md:p-10">
       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-red-500 via-transparent to-black opacity-30 blur-5xl pointer-events-none"></div>
@@ -8,10 +8,10 @@ export default function Register() {
         <h1 className="text-3xl mb-2 font-bold bg-gradient-to-br from-purple-600 via-pink-500 via-red-500 to-orange-400 bg-clip-text text-transparent">
           Join CoreFitness
         </h1>
-        <p>Create your account and start your fitness journey</p>
+        <p>Reset your password</p>
       </div>
       <div className="w-full max-w-sm">
-        <RegisterForm />
+        <ResetPasswordForm />
       </div>
     </div>
   );
