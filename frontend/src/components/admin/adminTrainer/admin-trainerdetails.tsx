@@ -250,7 +250,7 @@ export default function AdminTrainerDetails() {
           <p>Specialization</p>
           <SelectSpecialization
             value={trainer.specialization}
-            onValueChange={(val) => handleChange("specialization", val)}
+            onChange={(val) => handleChange("specialization", val)}
             disabled={!isEditing}
           />
         </div>
@@ -268,7 +268,7 @@ export default function AdminTrainerDetails() {
           <p>Clients Type Served</p>
           <SelectClientTypes
             value={trainer.clientTypes}
-            onValueChange={(val) => handleChange("clientTypes", val)}
+            onChange={(val) => handleChange("clientTypes", val)}
             disabled={!isEditing}
           />
         </div>

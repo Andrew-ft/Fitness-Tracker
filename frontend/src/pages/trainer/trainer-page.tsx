@@ -104,9 +104,6 @@ export default function Trainer() {
         </header>
 
         <div className="p-4">
-          <h1 className="text-2xl font-bold">This is Trainer page.</h1>
-        </div>
-        <div className="p-4">
           <Outlet />
         </div>
       </SidebarInset>

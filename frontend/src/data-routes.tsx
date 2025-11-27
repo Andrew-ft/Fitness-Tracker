@@ -28,7 +28,7 @@ import MemberRoutines from "./pages/member-routine.tsx";
 import MemberProfile from "./pages/member-profile.tsx";
 
 import PrivateWrapper from "./components/routing/PrivateWrapper.tsx";
-import TrainerPage from "./pages/trainer-page.tsx";
+import TrainerPage from "./pages/trainer/trainer-page.tsx";
 import MemberPage from "./pages/member-page.tsx";
 import AdminAddWorkout from "./components/admin/adminWorkout/admin-addworkout.tsx";
 import AdminAddRoutine from "./components/admin/adminRoutine/admin-addroutine.tsx";
@@ -36,6 +36,12 @@ import AdminTrainerDetails from "./components/admin/adminTrainer/admin-trainerde
 import AdminMemberDetails from "./components/admin/adminMember/admin-memberdetails.tsx";
 import AdminWorkoutDetails from "./components/admin/adminWorkout/admin-workoutdetails.tsx";
 import AdminRoutineDetails from "./components/admin/adminRoutine/admin-routinedetails.tsx";
+import TrainerAddWorkout from "./components/trainer/trainerWorkout/trainer-addworkout.tsx";
+import TrainerWorkoutDetails from "./components/trainer/trainerWorkout/trainer-workoutdetails.tsx";
+import TrainerAddRoutine from "./components/trainer/trainerRoutine/trainer-routinedetails.tsx";
+import TrainerRoutineDetails from "./components/trainer/trainerRoutine/trainer-routinedetails.tsx";
+import TrainerAddMember from "./components/trainer/trainerMember/trainer-addmember.tsx";
+import TrainerMemberDetails from "./components/trainer/trainerMember/trainer-memberdetails.tsx";
 
 export const router = createBrowserRouter([
   {
@@ -90,8 +96,14 @@ export const router = createBrowserRouter([
       { index: true, element: <TrainerDashboard /> },
       { path: "dashboard", element: <TrainerDashboard /> },
       { path: "workout", element: <TrainerWorkout /> },
+      { path: "workouts/add", element: <TrainerAddWorkout /> },
+      { path: "workouts/:id", element: <TrainerWorkoutDetails /> },
       { path: "routines", element: <TrainerRoutines /> },
-      { path: "members", element: <TrainerMembers /> },
+      { path: "routines/add", element: <TrainerAddRoutine /> },
+      { path: "routines/:id", element: <TrainerRoutineDetails /> },
+      { path: "members", element: <TrainerMembers /> }, 
+      { path: "members/add", element: <TrainerAddMember /> },
+      { path: "members/:id", element: <TrainerMemberDetails /> },
       { path: "profile", element: <TrainerProfile /> },
     ],
   },

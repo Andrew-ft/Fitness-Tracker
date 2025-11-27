@@ -6,17 +6,17 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 
 interface SelectProps {
   disabled?: boolean;
   value?: string;
-  onValueChange?: (val: string) => void;
+  onChange?: (val: string) => void; // 👈 renamed to onChange
 }
 
-export function SelectSpecialization({ disabled }: SelectProps) {
+export function SelectSpecialization({ disabled, value, onChange }: SelectProps) {
   return (
-    <Select disabled={disabled}>
+    <Select disabled={disabled} value={value} onValueChange={onChange}>
       <SelectTrigger className="md:w-4/5 w-full">
         <SelectValue placeholder="Select Specialization" />
       </SelectTrigger>

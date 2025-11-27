@@ -33,6 +33,14 @@ export default function RoutineCard({
   numWorkouts: number;
   onDelete: (id: number) => void;
 }) {
+  const role = localStorage.getItem("role") || "member"; // fallback
+  const basePath =
+    role === "admin"
+      ? "/admin/routines"
+      : role === "trainer"
+      ? "/trainer/routines"
+      : "/member/routines";
+
   // helper to pick badge style
   const renderDifficultyBadge = (level: string) => {
     switch (level.toLowerCase()) {
@@ -45,7 +53,7 @@ export default function RoutineCard({
       case "intermediate":
         return <Badge variant="secondary">{level}</Badge>;
       case "advanced":
-        return <Badge variant="default">{level}</Badge>; // dark primary
+        return <Badge variant="default">{level}</Badge>;
       default:
         return <Badge variant="outline">{level}</Badge>;
     }
@@ -55,10 +63,12 @@ export default function RoutineCard({
     <Card className="w-fit">
       <CardHeader>
         <div className="flex items-center gap-2 pb-3">
-                  <BicepsFlexed className="text-primary"/>
-        <Link to={`/admin/routines/${id}`}>
-          <CardTitle className="mb-1 cursor-pointer inline-flex items-center">{title}</CardTitle>
-        </Link>
+          <BicepsFlexed className="text-primary" />
+          <Link to={`${basePath}/${id}`}>
+            <CardTitle className="mb-1 cursor-pointer inline-flex items-center">
+              {title}
+            </CardTitle>
+          </Link>
         </div>
         <div className="flex gap-1">
           <Badge variant="secondary">{focus}</Badge>
@@ -88,7 +98,7 @@ export default function RoutineCard({
 
       <CardFooter>
         <CardAction className="flex flex-wrap gap-2 w-full">
-          <Link to={`/admin/routines/${id}`}>
+          <Link to={`${basePath}/${id}`}>
             <Button variant="secondary" className="cursor-pointer">
               Edit
             </Button>

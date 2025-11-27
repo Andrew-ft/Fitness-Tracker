@@ -14,9 +14,9 @@ interface SelectProps {
   onValueChange?: (val: string) => void;
 }
 
-export function SelectGender({ disabled }: SelectProps) {
+export function SelectGender({ disabled, value, onValueChange }: SelectProps) {
   return (
-    <Select disabled={disabled}>
+    <Select disabled={disabled} value={value} onValueChange={onValueChange}>
       <SelectTrigger className="md:w-4/5 w-full">
         <SelectValue placeholder="Select Gender" />
       </SelectTrigger>

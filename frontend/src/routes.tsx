@@ -26,7 +26,7 @@ import MemberRoutines from "./pages/member-routine.tsx";
 import MemberProfile from "./pages/member-profile.tsx";
 
 import PrivateRoute from "./components/routing/PrivateRoute.tsx";
-import TrainerPage from "./pages/trainer-page.tsx";
+import TrainerPage from "./pages/trainer/trainer-page.tsx";
 import MemberPage from "./pages/member-page.tsx";
 import AdminAddTrainer from "./components/admin/adminTrainer/admin-addtrainer.tsx";
 import AdminAddMember from "./components/admin/adminMember/admin-addmember.tsx";
@@ -35,6 +35,12 @@ import AdminAddRoutine from "./components/admin/adminRoutine/admin-addroutine.ts
 import AdminTrainerDetails from "./components/admin/adminTrainer/admin-trainerdetails.tsx";
 import AdminMemberDetails from "./components/admin/adminMember/admin-memberdetails.tsx";
 import AdminWorkoutDetails from "./components/admin/adminWorkout/admin-workoutdetails.tsx";
+import TrainerAddWorkout from "./components/trainer/trainerWorkout/trainer-addworkout.tsx";
+import TrainerWorkoutDetails from "./components/trainer/trainerWorkout/trainer-workoutdetails.tsx";
+import TrainerAddRoutine from "./components/trainer/trainerRoutine/trainer-routinedetails.tsx";
+import TrainerRoutineDetails from "./components/trainer/trainerRoutine/trainer-routinedetails.tsx";
+import TrainerAddMember from "./components/trainer/trainerMember/trainer-addmember.tsx";
+import TrainerMemberDetails from "./components/trainer/trainerMember/trainer-memberdetails.tsx";
 
 export default function RouteLayout() {
   return (
@@ -83,8 +89,14 @@ export default function RouteLayout() {
           <Route index element={<TrainerPage />} />
           <Route path="dashboard" element={<TrainerDashboard />} />
           <Route path="workout" element={<TrainerWorkout />} />
+          <Route path="workouts/add" element={<TrainerAddWorkout />} />
+          <Route path="workouts/:id" element={<TrainerWorkoutDetails />} />
           <Route path="routines" element={<TrainerRoutines />} />
+          <Route path="routines/add" element={<TrainerAddRoutine />} />
+          <Route path="routines/:id" element={<TrainerRoutineDetails />} />
           <Route path="members" element={<TrainerMembers />} />
+          <Route path="members/add" element={<TrainerAddMember />} />
+          <Route path="members/:id" element={<TrainerMemberDetails />} />
           <Route path="profile" element={<TrainerProfile />} />
         </Route>
 

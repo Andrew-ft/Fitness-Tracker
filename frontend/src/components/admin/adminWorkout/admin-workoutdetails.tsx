@@ -110,7 +110,7 @@ export default function AdminWorkoutDetails() {
               className="w-full text-sm"
               value={formData.description}
               onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
+                setFormData({ ...formData, description: e.target.value }) 
               }
               disabled={!isEditing}
             />

@@ -11,12 +11,12 @@ import {
 interface SelectProps {
   disabled?: boolean;
   value?: string;
-  onValueChange?: (val: string) => void;
+  onChange?: (val: string) => void; // 👈 renamed to onChange
 }
 
-export function SelectClientTypes({ disabled }: SelectProps) {
+export function SelectClientTypes({ disabled, value, onChange }: SelectProps) {
   return (
-    <Select disabled={disabled}>
+    <Select disabled={disabled} value={value} onValueChange={onChange}>
       <SelectTrigger className="md:w-4/5 w-full">
         <SelectValue placeholder="Select clients types served" />
       </SelectTrigger>
@@ -41,4 +41,3 @@ export function SelectClientTypes({ disabled }: SelectProps) {
     </Select>
   );
 }
-

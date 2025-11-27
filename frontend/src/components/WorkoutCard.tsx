@@ -17,15 +17,24 @@ export default function WorkoutCard({
   title,
   muscleGroup,
   difficulty,
-  onDelete, // callback passed from parent
+  onDelete,
 }: {
   id: number;
   title: string;
   muscleGroup: string;
   difficulty: string;
-  onDelete: (id: number) => void; // delete handler
+  onDelete: (id: number) => void;
 }) {
-  // pick badge style by difficulty
+  const role = localStorage.getItem("role") || "member"; // default fallback
+
+  // choose correct path based on role
+  const basePath =
+    role === "admin"
+      ? "/admin/workouts"
+      : role === "trainer"
+      ? "/trainer/workouts"
+      : "/member/workouts";
+
   const renderDifficultyBadge = (level: string) => {
     switch (level.toLowerCase()) {
       case "beginner":
@@ -37,7 +46,7 @@ export default function WorkoutCard({
       case "intermediate":
         return <Badge variant="secondary">{level}</Badge>;
       case "advanced":
-        return <Badge variant="default">{level}</Badge>; // primary look
+        return <Badge variant="default">{level}</Badge>;
       default:
         return <Badge variant="outline">{level}</Badge>;
     }
@@ -46,9 +55,9 @@ export default function WorkoutCard({
   return (
     <Card className="w-fit">
       <CardHeader>
-        <div className="flex items-center gap-2 pb-3 ">
-          <Dumbbell className="text-primary"/>
-          <Link to={`/admin/workouts/${id}`}>
+        <div className="flex items-center gap-2 pb-3">
+          <Dumbbell className="text-primary" />
+          <Link to={`${basePath}/${id}`}>
             <CardTitle className="mb-1 inline-flex items-center cursor-pointer">
               {title}
             </CardTitle>
@@ -67,9 +76,8 @@ export default function WorkoutCard({
       </CardContent>
 
       <CardFooter>
-        <CardAction className="flex flex-wrap gap-2 w-full ">
-          {/* <Button variant="secondary">Save</Button> */}
-          <Link to={`/admin/workouts/${id}`}>
+        <CardAction className="flex flex-wrap gap-2 w-full">
+          <Link to={`${basePath}/${id}`}>
             <Button variant="secondary" className="cursor-pointer">
               Edit
             </Button>

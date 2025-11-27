@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { DropdownMenuCheckboxes } from "../../DropDownMenu";
 import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
-import AdminTrainerTable from "../../AdminTrainerTable";
+import AdminTrainerTable from "../../TrainerTable";
 import { useState } from "react";
 
 export default function AdminTrainer() {

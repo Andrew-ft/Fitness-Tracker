@@ -2,8 +2,7 @@ import prisma from "../../config/prisma.js";
 import bcrypt from "bcrypt";
 import { Role } from "@prisma/client";
 
-const registerUser = async (fullName, email, password, role) => {
-  // checking if the user already exists
+const registerUser = async (userName, email, password, role) => {
   const existingUser = await prisma.user.findUnique({
     where: { email },
   });
@@ -11,25 +10,45 @@ const registerUser = async (fullName, email, password, role) => {
     throw new Error("User already exists");
   }
 
-  // checking password
   if (password.length < 6) {
     throw new Error("Password must be at least 6 characters long");
   }
 
-  // hashing the password
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
 
-  // creating a new user
-  const roleMember = Role.member;
+  const userRole = Object.values(Role).includes(role) ? role : Role.MEMBER;
   const user = await prisma.user.create({
     data: {
-      fullName,
+      userName,
       email,
       password: hashedPassword,
-      role: role || roleMember,
+      role: userRole,
     },
   });
+  if (userRole === Role.ADMIN) {
+    await prisma.admin.create({ data: { adminId: user.userId } });
+  } else if (userRole === Role.TRAINER) {
+    await prisma.trainer.create({
+      data: {
+        trainerId: user.userId,
+        certificate: "",
+        specialization: "",
+        experiencedYears: 0,
+        clientTypes: ""
+      }
+    });
+  } else if (userRole === Role.MEMBER) { 
+    await prisma.member.create({
+      data: {
+        memberId: user.userId,
+        goal: "",
+        medicalNotes: "",
+        trainerId: null,
+      },
+    });
+  }
+  
   console.log("New user created successfully");
   return user;
 };
