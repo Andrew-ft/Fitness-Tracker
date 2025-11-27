@@ -1,16 +1,20 @@
 import { Link } from "react-router-dom";
-import { DropdownMenuCheckboxes } from "../../DropDownMenu";
 import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
 import AdminTrainerTable from "../../TrainerTable";
 import { useState } from "react";
 
+import { motion } from "framer-motion";
+
 export default function AdminTrainer() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All"); // All, Active, Inactive
 
   return (
-    <div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
       <div className="mb-10 flex items-center justify-between flex-wrap gap-10">
         <div>
           <h1 className="font-semibold text-2xl">Trainer Management</h1>
@@ -25,24 +29,19 @@ export default function AdminTrainer() {
         </div>
       </div>
 
+      {/* ✅ REMOVED STATUS FILTER */}
       <div className="flex gap-5 mx-auto md:w-3/5 w-full mb-5">
         <Input
           placeholder="Search Trainers"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <DropdownMenuCheckboxes
-          value={statusFilter}
-          onChange={(val) => setStatusFilter(val)}
-        />
       </div>
 
       <div>
-        <AdminTrainerTable
-          searchQuery={searchTerm}
-          statusFilter={statusFilter}
-        />
+        {/* ✅ REMOVED statusFilter prop */}
+        <AdminTrainerTable searchQuery={searchTerm} />
       </div>
-    </div>
+    </motion.div>
   );
 }

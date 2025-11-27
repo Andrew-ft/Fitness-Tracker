@@ -10,7 +10,7 @@ export default function PrivateRoute({
   allowedRoles,
 }: PrivateRouteProps) {
   const token = localStorage.getItem("token");
-  const role = localStorage.getItem("role");
+  const role = localStorage.getItem("role")?.toUpperCase();
 
   if (!token || !role) {
     return <Navigate to="/login" replace />;

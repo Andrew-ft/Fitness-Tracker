@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 function validateEmail(email: string) {
   return /^\S+@\S+\.\S+$/.test(email);
@@ -21,16 +22,18 @@ export function RegisterForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const [fullName, setFullName] = useState("");
+  const [userName, setUserName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [role, setRole] = useState("MEMBER");
 
   const [errors, setErrors] = useState<Record<string, string | null>>({
-    fullName: null,
+    userName: null,
     email: null,
     password: null,
     confirmPassword: null,
+    role: null,
   });
 
   const [loading, setLoading] = useState(false);
@@ -38,7 +41,10 @@ export function RegisterForm({
 
   useEffect(() => {
     if (email && !validateEmail(email)) {
-      setErrors((prev) => ({ ...prev, email: "Please enter a valid email address." }));
+      setErrors((prev) => ({
+        ...prev,
+        email: "Please enter a valid email address.",
+      }));
     } else {
       setErrors((prev) => ({ ...prev, email: null }));
     }
@@ -46,13 +52,19 @@ export function RegisterForm({
 
   useEffect(() => {
     if (password && password.length < 6) {
-      setErrors((prev) => ({ ...prev, password: "Password must be at least 6 characters." }));
+      setErrors((prev) => ({
+        ...prev,
+        password: "Password must be at least 6 characters.",
+      }));
     } else {
       setErrors((prev) => ({ ...prev, password: null }));
     }
 
     if (confirmPassword && password !== confirmPassword) {
-      setErrors((prev) => ({ ...prev, confirmPassword: "Passwords do not match." }));
+      setErrors((prev) => ({
+        ...prev,
+        confirmPassword: "Passwords do not match.",
+      }));
     } else {
       setErrors((prev) => ({ ...prev, confirmPassword: null }));
     }
@@ -63,14 +75,15 @@ export function RegisterForm({
 
     let hasError = false;
     const newErrors: typeof errors = {
-      fullName: null,
+      userName: null,
       email: null,
       password: null,
       confirmPassword: null,
+      role: null,
     };
 
-    if (!fullName.trim()) {
-      newErrors.fullName = "This field is required.";
+    if (!userName.trim()) {
+      newErrors.userName = "This field is required.";
       hasError = true;
     }
 
@@ -99,24 +112,42 @@ export function RegisterForm({
     }
 
     setErrors(newErrors);
-
     if (hasError) return;
 
     setLoading(true);
     try {
       const res = await API.post("/auth/register", {
-        fullName,
+        userName,
         email,
         password,
+        role,
       });
 
       if (res.status === 201 || res.status === 200) {
-        setFullName("");
-        setEmail("");
-        setPassword("");
-        setConfirmPassword("");
-        setErrors({ fullName: null, email: null, password: null, confirmPassword: null });
-        navigate("/login");
+        const { token, user } = res.data;
+
+        if (token && user) {
+          localStorage.setItem("token", token);
+          localStorage.setItem("role", user.role.toUpperCase());
+          localStorage.setItem("name", user.userName);
+          localStorage.setItem("email", user.email);
+
+          setUserName("");
+          setEmail("");
+          setPassword("");
+          setConfirmPassword("");
+          setRole("MEMBER");
+
+          setErrors({
+            userName: null,
+            email: null,
+            password: null,
+            confirmPassword: null,
+            role: null,
+          });
+
+          navigate("/login");
+        }
       }
     } catch (err: any) {
       console.log("Register error:", err.response?.data);
@@ -145,116 +176,145 @@ export function RegisterForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
-        <CardHeader>
-          <CardTitle>Create account</CardTitle>
-          <CardDescription>Fill in your details to get started.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit}>
-            <div className="flex flex-col gap-6">
-              {/* Full Name */}
-              <div className="grid gap-3">
-                <Label htmlFor="fullname">Full Name</Label>
-                <Input
-                  id="fullname"
-                  type="text"
-                  placeholder="Enter your full name"
-                  value={fullName}
-                  onChange={(e) => {
-                    setFullName(e.target.value);
-                    setErrors((prev) => ({ ...prev, fullName: null }));
-                  }}
-                  aria-describedby="fullname-error"
-                  aria-invalid={!!errors.fullName}
-                />
-                {errors.fullName && (
-                  <p id="fullname-error" className="text-red-500 text-sm" role="alert">
-                    {errors.fullName}
-                  </p>
-                )}
-              </div>
+      {/* ⭐ Wrapped ONLY the Card with motion */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, ease: "easeOut" }}
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle>Create account</CardTitle>
+            <CardDescription>
+              Fill in your details to get started.
+            </CardDescription>
+          </CardHeader>
 
-              {/* Email */}
-              <div className="grid gap-3">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="name@example.com"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    setErrors((prev) => ({ ...prev, email: null }));
-                  }}
-                  aria-describedby="email-error"
-                  aria-invalid={!!errors.email}
-                />
-                {errors.email && (
-                  <p id="email-error" className="text-red-500 text-sm" role="alert">
-                    {errors.email}
-                  </p>
-                )}
-              </div>
+          <CardContent>
+            <form onSubmit={handleSubmit}>
+              <div className="flex flex-col gap-6">
+                {/* Full Name */}
+                <div className="grid gap-3">
+                  <Label htmlFor="fullname">Full Name</Label>
+                  <Input
+                    id="fullname"
+                    type="text"
+                    placeholder="Enter your full name"
+                    value={userName}
+                    onChange={(e) => {
+                      setUserName(e.target.value);
+                      setErrors((prev) => ({ ...prev, fullName: null }));
+                    }}
+                    aria-describedby="fullname-error"
+                    aria-invalid={!!errors.fullName}
+                  />
+                  {errors.fullName && (
+                    <p
+                      id="fullname-error"
+                      className="text-red-500 text-sm"
+                      role="alert"
+                    >
+                      {errors.fullName}
+                    </p>
+                  )}
+                </div>
 
-              {/* Password */}
-              <div className="grid gap-3">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Create a password"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setErrors((prev) => ({ ...prev, password: null }));
-                  }}
-                  aria-describedby="password-error"
-                  aria-invalid={!!errors.password}
-                />
-                {errors.password && (
-                  <p id="password-error" className="text-red-500 text-sm" role="alert">
-                    {errors.password}
-                  </p>
-                )}
-              </div>
+                {/* Email */}
+                <div className="grid gap-3">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="name@example.com"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setErrors((prev) => ({ ...prev, email: null }));
+                    }}
+                    aria-describedby="email-error"
+                    aria-invalid={!!errors.email}
+                  />
+                  {errors.email && (
+                    <p
+                      id="email-error"
+                      className="text-red-500 text-sm"
+                      role="alert"
+                    >
+                      {errors.email}
+                    </p>
+                  )}
+                </div>
 
-              {/* Confirm Password */}
-              <div className="grid gap-3">
-                <Label htmlFor="confirm-password">Confirm Password</Label>
-                <Input
-                  id="confirm-password"
-                  type="password"
-                  placeholder="Confirm your password"
-                  value={confirmPassword}
-                  onChange={(e) => {
-                    setConfirmPassword(e.target.value);
-                    setErrors((prev) => ({ ...prev, confirmPassword: null }));
-                  }}
-                  aria-describedby="confirm-password-error"
-                  aria-invalid={!!errors.confirmPassword}
-                />
-                {errors.confirmPassword && (
-                  <p id="confirm-password-error" className="text-red-500 text-sm" role="alert">
-                    {errors.confirmPassword}
-                  </p>
-                )}
-              </div>
+                {/* Password */}
+                <div className="grid gap-3">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Create a password"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setErrors((prev) => ({ ...prev, password: null }));
+                    }}
+                    aria-describedby="password-error"
+                    aria-invalid={!!errors.password}
+                  />
+                  {errors.password && (
+                    <p
+                      id="password-error"
+                      className="text-red-500 text-sm"
+                      role="alert"
+                    >
+                      {errors.password}
+                    </p>
+                  )}
+                </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Creating..." : "Create Account"}
-              </Button>
+                {/* Confirm Password */}
+                <div className="grid gap-3">
+                  <Label htmlFor="confirm-password">Confirm Password</Label>
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    placeholder="Confirm your password"
+                    value={confirmPassword}
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value);
+                      setErrors((prev) => ({
+                        ...prev,
+                        confirmPassword: null,
+                      }));
+                    }}
+                    aria-describedby="confirm-password-error"
+                    aria-invalid={!!errors.confirmPassword}
+                  />
+                  {errors.confirmPassword && (
+                    <p
+                      id="confirm-password-error"
+                      className="text-red-500 text-sm"
+                      role="alert"
+                    >
+                      {errors.confirmPassword}
+                    </p>
+                  )}
+                </div>
 
-              <div className="mt-4 text-center text-sm">
-                Already have an account?{" "}
-                <Link to="/login" className="text-primary cursor-pointer">
-                  Sign in
-                </Link>
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? "Creating..." : "Create Account"}
+                </Button>
+
+                <div className="mt-4 text-center text-sm">
+                  Already have an account?{" "}
+                  <Link to="/login" className="text-primary cursor-pointer">
+                    Sign in
+                  </Link>
+                </div>
               </div>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+            </form>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 }

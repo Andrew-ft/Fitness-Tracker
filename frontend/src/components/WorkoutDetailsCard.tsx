@@ -7,6 +7,7 @@ interface WorkoutCardProps {
   reps: number;
   index: number;
   className?: string;
+  completed?: boolean; 
 }
 
 export function WorkoutDetailsCard({ name, sets, reps, index, className }: WorkoutCardProps) {

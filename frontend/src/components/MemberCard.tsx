@@ -12,7 +12,7 @@ interface Member {
 
 interface MemberCardProps {
   member: Member;
-  onRemove?: () => void; // optional now
+  onRemove?: () => void;
   onClick: () => void;
 }
 
@@ -39,7 +39,7 @@ export function MemberCard({ member, onRemove, onClick }: MemberCardProps) {
         </Button>
       )}
 
-      <CardContent className="" onClick={onClick}>
+      <CardContent onClick={onClick}>
         <div className="flex items-center space-x-3">
           <Avatar className="h-8 w-8 rounded-lg">
             <AvatarImage src={member.avatar} alt={member.name} />

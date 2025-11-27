@@ -17,21 +17,22 @@ export default function WorkoutCard({
   title,
   muscleGroup,
   difficulty,
+  description,
   onDelete,
 }: {
   id: number;
   title: string;
   muscleGroup: string;
   difficulty: string;
+  description?: string;
   onDelete: (id: number) => void;
 }) {
-  const role = localStorage.getItem("role") || "member"; // default fallback
+  const role = localStorage.getItem("role") || "MEMBER";
 
-  // choose correct path based on role
   const basePath =
-    role === "admin"
+    role === "ADMIN"
       ? "/admin/workouts"
-      : role === "trainer"
+      : role === "TRAINER"
       ? "/trainer/workouts"
       : "/member/workouts";
 
@@ -53,36 +54,52 @@ export default function WorkoutCard({
   };
 
   return (
-    <Card className="w-fit">
-      <CardHeader>
-        <div className="flex items-center gap-2 pb-3">
-          <Dumbbell className="text-primary" />
-          <Link to={`${basePath}/${id}`}>
-            <CardTitle className="mb-1 inline-flex items-center cursor-pointer">
+    <Card className="w-full sm:w-64 flex flex-col justify-between border shadow hover:shadow-lg transition-shadow duration-200">
+      {/* Card Header */}
+      <CardHeader className="pb-2">
+        <div className="flex items-center gap-2">
+          <Dumbbell className="text-primary w-5 h-5" />
+          <Link to={`${basePath}/${id}`} className="flex-1">
+            <CardTitle className="text-base font-semibold truncate hover:underline">
               {title}
             </CardTitle>
           </Link>
         </div>
-        <div className="flex gap-1">
-          <Badge variant="secondary">{muscleGroup}</Badge>
+        <div className="flex flex-wrap gap-1 mt-2">
+          <Badge variant="secondary" className="capitalize">
+            {muscleGroup}
+          </Badge>
           {renderDifficultyBadge(difficulty)}
         </div>
       </CardHeader>
 
-      <CardContent>
-        <CardDescription>
-          This is a {muscleGroup} exercise for building strength.
+      {/* Card Content */}
+      <CardContent className="py-2 flex-1">
+        <CardDescription className="text-sm text-gray-600 line-clamp-3">
+          {description || `This is a ${muscleGroup} exercise for building strength.`}
         </CardDescription>
       </CardContent>
 
-      <CardFooter>
-        <CardAction className="flex flex-wrap gap-2 w-full">
-          <Link to={`${basePath}/${id}`}>
-            <Button variant="secondary" className="cursor-pointer">
-              Edit
-            </Button>
-          </Link>
-          <Button onClick={() => onDelete(id)}>Delete</Button>
+      {/* Card Footer */}
+      <CardFooter className="pt-2">
+        <CardAction className="flex gap-2 flex-wrap w-full">
+          {(role === "ADMIN" || role === "TRAINER") ? (
+            <>
+              <Link to={`${basePath}/${id}`}>
+                <Button variant="secondary" className="flex-1 min-w-[70px]">
+                  Edit
+                </Button>
+              </Link>
+              <Button
+                onClick={() => onDelete(id)}
+                className="flex-1 min-w-[70px] text-white"
+              >
+                Delete
+              </Button>
+            </>
+          ) : (
+            <div className="w-full"></div>
+          )}
         </CardAction>
       </CardFooter>
     </Card>

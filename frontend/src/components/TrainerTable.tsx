@@ -1,77 +1,57 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "gridjs/dist/theme/mermaid.css";
-import { Grid, _ } from "gridjs-react";
+import { Grid } from "gridjs-react";
 import { h } from "gridjs";
 import { useNavigate } from "react-router-dom";
+import API from "@/lib/axios";
 
 interface AdminTrainerTableProps {
   searchQuery: string;
-  statusFilter: string;
 }
 
-const AdminTrainerTable: React.FC<AdminTrainerTableProps> = ({ searchQuery, statusFilter }) => {
+const AdminTrainerTable: React.FC<AdminTrainerTableProps> = ({ searchQuery }) => {
   const navigate = useNavigate();
+  const [trainers, setTrainers] = useState<any[]>([]);
 
-  // Use state for data
-  const [trainers, setTrainers] = useState([
-    {
-      id: 1,
-      name: "John Doe",
-      email: "john@example.com",
-      status: "Active",
-      clients: 12,
-      experience: "5 years",
-      routines: 8,
-      specialization: "Strength Training",
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      email: "jane@example.com",
-      status: "Inactive",
-      clients: 6,
-      experience: "3 years",
-      routines: 5,
-      specialization: "Yoga",
-    },
-    {
-      id: 3,
-      name: "Mark Lee",
-      email: "mark@example.com",
-      status: "Active",
-      clients: 10,
-      experience: "4 years",
-      routines: 7,
-      specialization: "Cardio",
-    },
-  ]);
+useEffect(() => {
+  API.get("/admin/trainers")
+    .then((res) => {
+      console.log("Fetched trainers:", res.data);
 
-  const filteredData = trainers.filter(
-    (row) =>
-      (statusFilter === "All" || row.status === statusFilter) &&
-      (row.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      const trainerArray = res.data.trainers;
+      if (Array.isArray(trainerArray)) {
+        const mapped = trainerArray.map((t: any) => ({
+          id: t.trainerId,
+          name: t.user?.userName || "N/A",
+          email: t.user?.email || "N/A",
+          clients: t.members?.length || 0,
+          experience: t.experiencedYears || "N/A",
+          routines: t.user?.routines?.length || 0,
+          specialization: t.specialization || "N/A",
+        }));
+        setTrainers(mapped);
+      } else {
+        console.error("Unexpected trainers data format:", res.data);
+        setTrainers([]);
+      }
+    })
+    .catch((err) => {
+      console.error("Failed to fetch trainers:", err);
+    });
+}, []);
+
+
+  const filteredData = Array.isArray(trainers)
+    ? trainers.filter((row) =>
+        row.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         row.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        row.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        row.specialization.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
-
-  const renderStatusBadge = (status: string) => {
-    const base = "px-2 py-0.5 rounded-full text-white text-xs font-semibold";
-    return status === "Active"
-      ? h("span", { className: `${base} bg-green-700` }, status)
-      : h("span", { className: `${base} bg-secondary` }, status);
-  };
-
-  // Delete function
-  const handleDelete = (id: number) => {
-    if (window.confirm("Are you sure you want to delete this trainer?")) {
-      setTrainers((prev) => prev.filter((trainer) => trainer.id !== id));
-    }
-  };
+        row.specialization.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : [];
 
   return (
     <div className="md:p-5 md:py-0 py-5 text-sm font-semibold">
-      <Grid 
+      <Grid
         data={filteredData.map((row) => [
           h(
             "div",
@@ -88,14 +68,13 @@ const AdminTrainerTable: React.FC<AdminTrainerTableProps> = ({ searchQuery, stat
               ),
             ]
           ),
-          h("div", { className: "flex justify-center" }, renderStatusBadge(row.status)),
           h("div", { className: "text-center w-16" }, row.clients.toString()),
           h("div", { className: "text-center" }, row.experience),
           h("div", { className: "text-center w-16" }, row.routines.toString()),
           h("div", { className: "text-center" }, row.specialization),
           h(
             "div",
-            { className: "flex justify-center gap-2" },
+            { className: "flex justify-center" },
             [
               h(
                 "button",
@@ -105,20 +84,11 @@ const AdminTrainerTable: React.FC<AdminTrainerTableProps> = ({ searchQuery, stat
                 },
                 "Edit"
               ),
-              h(
-                "button",
-                {
-                  className: "px-3 py-1 bg-primary text-white rounded-md cursor-pointer",
-                  onClick: () => handleDelete(row.id), // delete row
-                },
-                "Delete"
-              ),
             ]
           ),
         ])}
         columns={[
           { name: "Trainer" },
-          { name: "Status" },
           { name: "Clients" },
           { name: "Experience" },
           { name: "Routines" },
@@ -127,7 +97,7 @@ const AdminTrainerTable: React.FC<AdminTrainerTableProps> = ({ searchQuery, stat
         ]}
         search={false}
         sort={false}
-        pagination={{ limit: 2 }}
+        pagination={{ limit: 5 }}
       />
     </div>
   );

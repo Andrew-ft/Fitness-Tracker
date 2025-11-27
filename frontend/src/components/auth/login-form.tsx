@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 export function LoginForm({
   className,
@@ -63,12 +64,10 @@ export function LoginForm({
       setEmailError("Email is required.");
       return;
     }
-
     if (!validateEmail(email.trim())) {
       setEmailError("Please enter a valid email address.");
       return;
     }
-
     if (!password.trim()) {
       setError("Password is required.");
       return;
@@ -77,54 +76,30 @@ export function LoginForm({
     setLoading(true);
 
     try {
-      const res = await API.post("/auth/login", {
-        email,
-        password,
-      });
+      const res = await API.post(
+        "/auth/login",
+        { email, password },
+        { withCredentials: true }
+      );
 
       if (res.data.error) {
         setError(res.data.error);
         return;
       }
 
-      if (res.status === 200) {
-        const { token, user } = res.data;
+      const { user } = res.data;
 
-        if (!token || !user?.role) {  
-          setError("Invalid login response.");
-          return;
-        }
+      localStorage.setItem("role", user.role);
+      localStorage.setItem("name", user.userName);
+      localStorage.setItem("email", user.email);
+      localStorage.setItem("userId", String(user.userId));
 
-        localStorage.setItem("token", token);
-        localStorage.setItem("role", user.role);
-        localStorage.setItem("name", user.fullName);
-        localStorage.setItem("email", user.email);
-
-        setError(null);
-
-        if (user.role === "admin") {
-          navigate("/admin");
-        } else if (user.role === "trainer") {
-          navigate("/trainer");
-        } else if (user.role === "member") {
-          navigate("/member");
-        } else {
-          navigate("/dashboard");
-        }
-      }
+      if (user.role === "ADMIN") navigate("/admin");
+      else if (user.role === "TRAINER") navigate("/trainer");
+      else if (user.role === "MEMBER") navigate("/member");
+      else navigate("/dashboard");
     } catch (err: any) {
-      if (process.env.NODE_ENV === "development") {
-        console.error("Login error:", err.response?.data);
-      }
-      const passwordError = err.response?.data?.errors?.password;
-      const passwordErrorMsg =
-        typeof passwordError === "object" && passwordError?.msg
-          ? passwordError.msg
-          : passwordError;
-
-      setError(
-        err.response?.data?.error || passwordErrorMsg || "Login failed."
-      );
+      setError(err.response?.data?.error || "Login failed.");
     } finally {
       setLoading(false);
     }
@@ -132,70 +107,78 @@ export function LoginForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
-        <CardHeader>
-          <CardTitle>Sign In</CardTitle>
-          <CardDescription>
-            Enter your credentials to access your account
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit}>
-            <div className="flex flex-col gap-6">
-              <div className="grid gap-3">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={handleEmailChange}
-                />
-                {emailError && (
-                  <p className="text-sm text-red-500">{emailError}</p>
-                )}
-              </div>
-              <div className="grid gap-3">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                  <Link
-                    to="/reset-password"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
-                    reset password?
-                  </Link>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle>Sign In</CardTitle>
+            <CardDescription>
+              Enter your credentials to access your account
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent>
+            <form onSubmit={handleSubmit}>
+              <div className="flex flex-col gap-6">
+                <div className="grid gap-3">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={handleEmailChange}
+                  />
+                  {emailError && (
+                    <p className="text-sm text-red-500">{emailError}</p>
+                  )}
                 </div>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={handlePasswordChange}
-                />
+
+                <div className="grid gap-3">
+                  <div className="flex items-center">
+                    <Label htmlFor="password">Password</Label>
+                    <Link
+                      to="/reset-password"
+                      className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                    >
+                      reset password?
+                    </Link>
+                  </div>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={handlePasswordChange}
+                  />
+                </div>
+
+                {error && (
+                  <p className="text-sm text-red-500" role="alert">
+                    {error}
+                  </p>
+                )}
+
+                <div className="flex flex-col gap-3">
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? "Logging in..." : "Login"}
+                  </Button>
+                </div>
               </div>
 
-              {error && (
-                <p className="text-sm text-red-500" role="alert">
-                  {error}
-                </p>
-              )}
-
-              <div className="flex flex-col gap-3">
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Logging in..." : "Login"}
-                </Button>
+              <div className="mt-4 text-center text-sm">
+                Don&apos;t have an account?{" "}
+                <Link to="/register" className="text-primary cursor-pointer">
+                  Sign up
+                </Link>
               </div>
-            </div>
-
-            <div className="mt-4 text-center text-sm">
-              Don&apos;t have an account?{" "}
-              <Link to="/register" className="text-primary cursor-pointer">
-                Sign up
-              </Link>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+            </form>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 }

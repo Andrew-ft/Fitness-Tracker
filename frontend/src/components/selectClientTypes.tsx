@@ -11,7 +11,7 @@ import {
 interface SelectProps {
   disabled?: boolean;
   value?: string;
-  onChange?: (val: string) => void; // 👈 renamed to onChange
+  onChange?: (val: string) => void; 
 }
 
 export function SelectClientTypes({ disabled, value, onChange }: SelectProps) {

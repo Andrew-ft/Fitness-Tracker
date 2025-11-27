@@ -1,56 +1,85 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
 import { Textarea } from "../../ui/textarea";
+import API from "@/lib/axios";
+
+import { motion } from "framer-motion";
+
+type AdminProfileType = {
+  userName: string;
+  email: string;
+  phoneNumber: string;
+  bio: string;
+  role: string;
+};
 
 export default function AdminProfile() {
-  // Form state
-  const [fullName, setFullName] = useState("Admin");
-  const [email, setEmail] = useState("admin@gmail.com");
-  const [phone, setPhone] = useState("09000000000");
-  const [bio, setBio] = useState("bio");
-
-  function capitalize(word: string) {
-    if (!word) return "";
-    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-  }
-
-  const adminName = capitalize(localStorage.getItem("name") || "User");
-  const adminRole = capitalize(localStorage.getItem("role") || "Role");
-  const adminEmail = localStorage.getItem("email") || "Email";
-
-  // Backup of original data to revert on cancel
-  const [originalData, setOriginalData] = useState({
-    fullName,
-    email,
-    phone,
-    bio,
+  const [profile, setProfile] = useState<AdminProfileType>({
+    userName: "",
+    email: "",
+    phoneNumber: "",
+    bio: "",
+    role: "",
   });
 
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [originalProfile, setOriginalProfile] = useState(profile);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await API.get("/admin/profile");
+        if (res.status === 200) {
+          setProfile(res.data.profile);
+          setOriginalProfile(res.data.profile);
+        }
+      } catch (err) {
+        console.error("Failed to fetch profile", err);
+      }
+    };
+    fetchProfile();
+  }, []);
 
   const handleEditClick = () => {
-    // Save current data snapshot on edit start
-    setOriginalData({ fullName, email, phone, bio });
+    setOriginalProfile(profile);
     setIsEditing(true);
   };
 
   const handleCancelClick = () => {
-    // Revert to original data on cancel
-    setFullName(originalData.fullName);
-    setEmail(originalData.email);
-    setPhone(originalData.phone);
-    setBio(originalData.bio);
+    setProfile(originalProfile);
     setIsEditing(false);
   };
 
-  const handleSaveClick = () => {
-    // TODO: Save logic here (e.g., API call)
-    setIsEditing(false);
+  const handleSaveClick = async () => {
+    setLoading(true);
+    try {
+      const res = await API.put("/admin/profile", {
+        userName: profile.userName,
+        email: profile.email,
+        phoneNumber: profile.phoneNumber,
+        bio: profile.bio,
+      });
+
+      if (res.status === 200) {
+        setProfile(res.data.profile);
+        setOriginalProfile(res.data.profile);
+        setIsEditing(false);
+      }
+    } catch (err: any) {
+      console.error("Failed to update profile", err.response?.data || err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
       <div className="mb-10">
         <h1 className="font-semibold text-2xl">Profile</h1>
         <p className="text-sm opacity-50">
@@ -60,15 +89,11 @@ export default function AdminProfile() {
 
       <div className="mb-10 flex items-center justify-between w-4/5 mx-auto">
         <div>
-          <h2 className="font-semibold text-lg">{adminName}</h2>
-          <p className="text-sm opacity-50">{adminRole}</p>
+          <h2 className="font-semibold text-lg">{profile.userName}</h2>
+          <p className="text-sm opacity-50">{profile.role}</p>
         </div>
         <div>
-          <Button
-            className="cursor-pointer"
-            onClick={handleEditClick}
-            disabled={isEditing}
-          >
+          <Button onClick={handleEditClick} disabled={isEditing}>
             Edit Profile
           </Button>
         </div>
@@ -80,12 +105,14 @@ export default function AdminProfile() {
           <Input
             id="fullname"
             type="text"
+            disabled={!isEditing}
             className={`md:w-4/5 w-full text-sm ${
               isEditing ? "opacity-100" : "opacity-75"
             }`}
-            disabled={!isEditing}
-            value={adminName}
-            onChange={(e) => setFullName(e.target.value)}
+            value={profile.userName}
+            onChange={(e) =>
+              setProfile((prev) => ({ ...prev, userName: e.target.value }))
+            }
           />
         </div>
 
@@ -94,37 +121,30 @@ export default function AdminProfile() {
           <Input
             id="email"
             type="email"
+            disabled={!isEditing}
             className={`md:w-4/5 w-full text-sm ${
               isEditing ? "opacity-100" : "opacity-75"
             }`}
-            disabled={!isEditing}
-            value={adminEmail}
-            onChange={(e) => setEmail(e.target.value)}
+            value={profile.email}
+            onChange={(e) =>
+              setProfile((prev) => ({ ...prev, email: e.target.value }))
+            }
           />
         </div>
 
         <div className="grid gap-3 mb-3">
           <p>Phone Number</p>
           <Input
-            id="phonenumber"
+            id="phone"
             type="tel"
+            disabled={!isEditing}
             className={`md:w-4/5 w-full text-sm ${
               isEditing ? "opacity-100" : "opacity-75"
             }`}
-            disabled={!isEditing}
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-          />
-        </div>
-
-        <div className="grid gap-3 mb-3">
-          <p>Last Login Date</p>
-          <Input
-            id="date"
-            type="text"
-            className="md:w-4/5 w-full text-sm opacity-75"
-            disabled
-            value="2023-10-01 12:00:00"
+            value={profile.phoneNumber}
+            onChange={(e) =>
+              setProfile((prev) => ({ ...prev, phoneNumber: e.target.value }))
+            }
           />
         </div>
 
@@ -136,20 +156,24 @@ export default function AdminProfile() {
             className={`w-full text-sm ${
               isEditing ? "opacity-100" : "opacity-75"
             }`}
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
+            value={profile.bio || ""}
+            onChange={(e) =>
+              setProfile((prev) => ({ ...prev, bio: e.target.value }))
+            }
           />
         </div>
       </div>
 
       {isEditing && (
         <div className="flex gap-4 md:w-4/5 w-full mx-auto">
-          <Button onClick={handleSaveClick}>Save Changes</Button>
+          <Button onClick={handleSaveClick} disabled={loading}>
+            {loading ? "Saving..." : "Save Changes"}
+          </Button>
           <Button variant="outline" onClick={handleCancelClick}>
             Cancel
           </Button>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

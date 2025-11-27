@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Dumbbell, SquareTerminal, TableProperties, User } from "lucide-react";
+import { Dumbbell, SquareTerminal, TableProperties, User, MessageCircle } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
@@ -21,6 +21,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Outlet } from "react-router";
+import { motion } from "framer-motion";
 
 // Sample data
 const data = {
@@ -32,13 +33,18 @@ const data = {
     },
     {
       title: "Workouts",
-      url: "/member/workout",
+      url: "/member/workouts",
       icon: Dumbbell,
     },
     {
       title: "Routines",
       url: "/member/routines",
       icon: TableProperties,
+    },
+    {
+      title: "Chat",
+      url: "/member/chat",
+      icon: MessageCircle,
     },
     {
       title: "Profile",
@@ -63,6 +69,11 @@ export default function Member() {
     setUser({ name, email, avatar });
   }, []);
   return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
     <SidebarProvider>
       <Sidebar collapsible="icon">
         <SidebarHeader></SidebarHeader>
@@ -94,12 +105,10 @@ export default function Member() {
         </header>
 
         <div className="p-4">
-          <h1 className="text-2xl font-bold">This is member page.</h1>
-        </div>
-        <div className="p-4">
           <Outlet />
         </div>
       </SidebarInset>
-    </SidebarProvider>
+      </SidebarProvider>
+    </motion.div>
   );
 }

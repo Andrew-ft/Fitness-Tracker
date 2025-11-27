@@ -28,6 +28,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Outlet } from "react-router";
+import { motion } from "framer-motion";
 
 const data = {
   navMain: [
@@ -79,6 +80,11 @@ export default function Admin() {
     setUser({ name, email, avatar });
   }, []);
   return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
     <SidebarProvider>
       <Sidebar collapsible="icon">
         <SidebarHeader></SidebarHeader>
@@ -113,6 +119,7 @@ export default function Admin() {
           <Outlet />
         </div>
       </SidebarInset>
-    </SidebarProvider>
+      </SidebarProvider>
+      </motion.div>
   );
 }
