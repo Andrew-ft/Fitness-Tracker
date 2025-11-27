@@ -9,11 +9,29 @@ interface AdminMemberTableProps {
   statusFilter: string;
 }
 
-const AdminMemberTable: React.FC<AdminMemberTableProps> = ({
+// Helper to decode JWT and extract role
+const getRoleFromToken = (token: string): string | null => {
+  try {
+    const base64Payload = token.split(".")[1];
+    const payload = JSON.parse(atob(base64Payload));
+    return payload?.role || null;
+  } catch (err) {
+    console.error("Invalid token", err);
+    return null;
+  }
+};
+
+const MemberTable: React.FC<AdminMemberTableProps> = ({
   searchQuery,
   statusFilter,
 }) => {
   const navigate = useNavigate();
+
+  // 🧠 In a real app, you'd get this from localStorage, cookies, or context
+// Get token from localStorage or context instead of hardcoding
+const token = localStorage.getItem("token");
+const role = token ? getRoleFromToken(token) : "admin"; // fallback to admin
+
 
   // State for member data
   const [members, setMembers] = useState([
@@ -89,13 +107,17 @@ const AdminMemberTable: React.FC<AdminMemberTableProps> = ({
               "button",
               {
                 className: "text-sm underline cursor-pointer",
-                onClick: () => navigate(`/admin/members/${row.id}`),
+                onClick: () => navigate(`/${role}/members/${row.id}`),
               },
               row.email
             ),
           ]),
           // Status
-          h("div", { className: "flex justify-center" }, renderStatusBadge(row.status)),
+          h(
+            "div",
+            { className: "flex justify-center" },
+            renderStatusBadge(row.status)
+          ),
           // Trainer
           h("div", { className: "text-center" }, row.trainer),
           // Joined Date
@@ -103,7 +125,11 @@ const AdminMemberTable: React.FC<AdminMemberTableProps> = ({
           // Routines
           h("div", { className: "text-center w-16" }, row.routines.toString()),
           // Calories Burned
-          h("div", { className: "text-center" }, `${row.caloriesBurned.toLocaleString()} kcal`),
+          h(
+            "div",
+            { className: "text-center" },
+            `${row.caloriesBurned.toLocaleString()} kcal`
+          ),
           // Actions
           h("div", { className: "flex justify-center gap-2" }, [
             h(
@@ -111,7 +137,7 @@ const AdminMemberTable: React.FC<AdminMemberTableProps> = ({
               {
                 className:
                   "px-3 py-1 text-black border border-black-300 rounded cursor-pointer",
-                onClick: () => navigate(`/admin/members/${row.id}`),
+                onClick: () => navigate(`/${role}/members/${row.id}`),
               },
               "Edit"
             ),
@@ -143,4 +169,4 @@ const AdminMemberTable: React.FC<AdminMemberTableProps> = ({
   );
 };
 
-export default AdminMemberTable;
+export default MemberTable;

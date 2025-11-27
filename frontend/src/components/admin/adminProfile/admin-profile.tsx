@@ -10,6 +10,15 @@ export default function AdminProfile() {
   const [phone, setPhone] = useState("09000000000");
   const [bio, setBio] = useState("bio");
 
+  function capitalize(word: string) {
+    if (!word) return "";
+    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+  }
+
+  const adminName = capitalize(localStorage.getItem("name") || "User");
+  const adminRole = capitalize(localStorage.getItem("role") || "Role");
+  const adminEmail = localStorage.getItem("email") || "Email";
+
   // Backup of original data to revert on cancel
   const [originalData, setOriginalData] = useState({
     fullName,
@@ -51,8 +60,8 @@ export default function AdminProfile() {
 
       <div className="mb-10 flex items-center justify-between w-4/5 mx-auto">
         <div>
-          <h2 className="font-semibold text-lg">{fullName}</h2>
-          <p className="text-sm opacity-50">Admin</p>
+          <h2 className="font-semibold text-lg">{adminName}</h2>
+          <p className="text-sm opacity-50">{adminRole}</p>
         </div>
         <div>
           <Button
@@ -75,7 +84,7 @@ export default function AdminProfile() {
               isEditing ? "opacity-100" : "opacity-75"
             }`}
             disabled={!isEditing}
-            value={fullName}
+            value={adminName}
             onChange={(e) => setFullName(e.target.value)}
           />
         </div>
@@ -89,7 +98,7 @@ export default function AdminProfile() {
               isEditing ? "opacity-100" : "opacity-75"
             }`}
             disabled={!isEditing}
-            value={email}
+            value={adminEmail}
             onChange={(e) => setEmail(e.target.value)}
           />
         </div>

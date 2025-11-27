@@ -1,20 +1,31 @@
-import { ENV } from "../config/env.js";
 import jwt from "jsonwebtoken";
-const authMiddleware = (req, res, next) => {
-  let token = req.cookies.jwt;
-  if (token) {
-    jwt.verify(token, ENV.JWT_SECRET, (err, decodedValue) => {
+import { ENV } from "../config/env.js";
+
+export const authMiddleware = (req, res, next) => {
+  try {
+    const token =
+      req.cookies?.jwt ||
+      req.headers["authorization"]?.split(" ")[1];
+
+    if (!token) {
+      return res.status(401).json({ error: "Token not provided" });
+    }
+
+    jwt.verify(token, ENV.JWT_SECRET, (err, decoded) => {
       if (err) {
-        return res.status(401).json({ error: "Unauthorized access" });
-      } else {
-        req.userId = decodedValue.id;
-        req.userRole = decodedValue.role;
-        next();
+        return res.status(403).json({ error: "Invalid or expired token" });
       }
+
+      req.user = {
+        id: decoded.userId,
+        role: decoded.role,
+      };
+
+      next();
     });
-  } else {
-    return res.status(400).json({ error: "token need to be provided" });
+  } catch (error) {
+    console.error("Auth middleware error:", error);
+    res.status(500).json({ error: "Internal authentication error" });
   }
 };
 
-export default authMiddleware;

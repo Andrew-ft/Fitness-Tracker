@@ -90,7 +90,7 @@ export function LoginForm({
       if (res.status === 200) {
         const { token, user } = res.data;
 
-        if (!token || !user?.role) {
+        if (!token || !user?.role) {  
           setError("Invalid login response.");
           return;
         }

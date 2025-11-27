@@ -3,14 +3,14 @@ import createToken from "../../helpers/createToken.js";
 
 const register = async (req, res) => {
   try {
-    const { fullName, email, password, role } = req.body;
+    const { userName, email, password, role } = req.body;
     const user = await authService.registerUser(
-      fullName,
+      userName,
       email,
       password,
       role
     );
-    let token = createToken(user.id, user.role);
+    let token = createToken(user.userId, user.role);
     res.cookie("jwt", token, {
       httpOnly: true,
       maxAge: 3 * 24 * 60 * 60 * 1000,
@@ -28,7 +28,7 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await authService.loginUser(email, password);
-    let token = createToken(user.id, user.role);
+    let token = createToken(user.userId, user.role);
     res.cookie("jwt", token, {
       httpOnly: true,
       maxAge: 3 * 24 * 60 * 60 * 1000,
@@ -43,9 +43,14 @@ const login = async (req, res) => {
 };
 
 const logout = async (req, res) => {
-  res.cookie('jwt', '', { maxAge: 1 });
-  return res.json({ msg: "User Logged out" });
+  res.clearCookie('jwt', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+  });
+  return res.status(200).json({ success: true, message: "User Logged out" });
 };
+
 
 const resetPassword = async (req, res) => { 
   try {

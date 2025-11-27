@@ -108,6 +108,7 @@ export default function Admin() {
             </Breadcrumb>
           </div>
         </header>
+        
         <div className="p-4">
           <Outlet />
         </div>

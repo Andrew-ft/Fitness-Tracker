@@ -1,155 +1,232 @@
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
-}
-
-model User {
-    id                String         @id @default(uuid())
-    fullName          String
-    email             String         @unique
-    password          String
-    role              Role           @default(member)
-    assignedTrainer   User?          @relation(name: "AssignedTrainer", fields: [assignedTrainerId], references: [id], onDelete: SetNull)
-    assignedTrainerId String?
-    members           User[]         @relation(name: "AssignedTrainer")
-    workouts          Workout[]      @relation(name: "CreatedWorkouts") 
-    routines          Routine[]      @relation(name: "CreatedRoutines")
-    notifications     Notification[] @relation(name: "UserNotifications")
-    savedWorkouts     Workout[]      @relation(name: "SavedWorkouts")
-    savedRoutines     Routine[]      @relation(name: "SavedRoutines")
-    progress          Progress[]     @relation(name: "UserProgress")
-    weight            Float?
-    height            Float?
-    bodyFat           Float?
-    waist             Float?
-    chest             Float?
-    arms              Float?
-    legs              Float?
-    measurementDate   DateTime?
-    createdAt         DateTime       @default(now())
-
-    @@index([email])
-}
-
-model Workout {
-    id             String           @id @default(uuid())
-    name           String
-    description    String
-    muscleGroup    MuscleGroup
-    subMuscleGroup SubMuscle
-    difficulty     String
-    caloriesBurned Int
-    createdBy      User?            @relation(name: "CreatedWorkouts", fields: [createdById], references: [id], onDelete: SetNull)
-    createdById    String?
-    routines       Routine[]
-    savedBy        User[]           @relation(name: "SavedWorkouts")
-    createdAt      DateTime         @default(now())
-    RoutineWorkout RoutineWorkout[]
-    Progress       Progress[]
-}
-
-model Routine {
-    id             String           @id @default(uuid())
-    name           String
-    workouts       Workout[]
-    createdBy      User?            @relation(name: "CreatedRoutines", fields: [createdById], references: [id], onDelete: SetNull)
-    createdById    String?
-    visibility     Visibility       @default(public)
-    time           Int
-    caloriesBurned Int
-    createdAt      DateTime         @default(now())
-    savedBy        User[]           @relation(name: "SavedRoutines")
-    RoutineWorkout RoutineWorkout[]
-}
-
-model RoutineWorkout {
-    id        String  @id @default(uuid())
-    routine   Routine @relation(fields: [routineId], references: [id], onDelete: Cascade)
-    routineId String
-    workout   Workout @relation(fields: [workoutId], references: [id], onDelete: Cascade)
-    workoutId String
-    sets      Int?
-    reps      Int?
-}
-
-model Notification {
-    id        String           @id @default(uuid())
-    user      User             @relation(name: "UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
-    userId    String
-    type      NotificationType
-    message   String
-    read      Boolean          @default(false)
-    createdAt DateTime         @default(now())
-}
-
-model Progress {
-    id        String   @id @default(uuid())
-    user      User     @relation(name: "UserProgress", fields: [userId], references: [id], onDelete: Cascade)
-    userId    String
-    workout   Workout? @relation(fields: [workoutId], references: [id], onDelete: SetNull)
-    workoutId String?
-    date      DateTime
-    notes     String?
-    createdAt DateTime @default(now())
-
-    @@index([userId, date])
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum Role {
-    member
-    trainer
-    admin
+  ADMIN
+  TRAINER
+  MEMBER
 }
 
 enum MuscleGroup {
-    all
-    chest
-    back
-    shoulders
-    arms
-    core
-    legs
-    cardio
-}
-
-enum Visibility {
-    public
-    private
-}
-
-enum NotificationType {
-    login
-    register
-    new_workout
-    new_routine
-    assign_trainer
+  ALL
+  CHEST
+  BACK
+  SHOULDERS
+  ARMS
+  CORE
+  LEGS
+  CARDIO
 }
 
 enum SubMuscle {
-    upper_chest
-    middle_chest
-    lower_chest
-    upper_back
-    lats
-    lower_back
-    front_delts
-    side_delts
-    rear_delts
-    biceps_long_head
-    biceps_short_head
-    brachialis
-    triceps_long_head
-    triceps_lateral_head
-    triceps_medial_head
-    upper_abs
-    lower_abs
-    obliques
-    quads
-    hamstrings
-    glutes
-    calves
+  UPPER_CHEST
+  MIDDLE_CHEST
+  LOWER_CHEST
+  UPPER_BACK
+  LATS
+  LOWER_BACK
+  FRONT_DELTS
+  SIDE_DELTS
+  REAR_DELTS
+  BICEPS_LONG_HEAD
+  BICEPS_SHORT_HEAD
+  BRACHIALIS
+  TRICEPS_LONG_HEAD
+  TRICEPS_LATERAL_HEAD
+  TRICEPS_MEDIAL_HEAD
+  UPPER_ABS
+  LOWER_ABS
+  OBLIQUES
+  QUADS
+  HAMSTRINGS
+  GLUTES
+  CALVES
+}
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum ProgressStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+model User {
+  userId      Int       @id @default(autoincrement())
+  userName    String
+  email       String    @unique
+  password    String
+  dateOfBirth DateTime?
+  gender      String?
+  bio         String?
+  phoneNumber String?
+  role        Role      @default(MEMBER)
+
+  admin   Admin?
+  trainer Trainer?
+  member  Member?
+
+  routines Routine[]
+}
+
+model Admin {
+  adminId Int  @id
+  user    User @relation(fields: [adminId], references: [userId])
+}
+
+model Trainer {
+  trainerId        Int    @id
+  user             User   @relation(fields: [trainerId], references: [userId])
+  certificate      String
+  specialization   String
+  experiencedYears Int
+  clientTypes      String
+
+  members  Member[]
+  workouts Workout[]
+
+  chats Chat[]
+}
+
+model Member {
+  memberId     Int      @id
+  user         User     @relation(fields: [memberId], references: [userId])
+  goal         String?
+  medicalNotes String?
+  trainerId    Int?
+  trainer      Trainer? @relation(fields: [trainerId], references: [trainerId])
+
+  progress      Progress[]
+  savedWorkouts SavedWorkouts[]
+  savedRoutines SavedRoutines[]
+
+  chats Chat[]
+
+  createdAt DateTime @default(now())
+}
+
+model Workout {
+  workoutId   Int         @id @default(autoincrement())
+  workoutName String
+  trainerId   Int? // optional
+  description String
+  difficulty  Difficulty
+  muscleGroup MuscleGroup
+  subMuscle   SubMuscle
+  equipment   String?
+
+  routineWorkouts Routine_Workout[]
+  progress        Progress[]
+  savedWorkouts   SavedWorkouts[]
+
+  trainer Trainer? @relation(fields: [trainerId], references: [trainerId]) // <-- optional
+}
+
+model Routine {
+  routineId   Int        @id @default(autoincrement())
+  routineName String
+  difficulty  Difficulty
+  type        String
+  duration    Int
+  calories    Int
+  description String?
+  isPrivate   Boolean    @default(false)
+
+  createdById Int?
+  createdBy   User? @relation(fields: [createdById], references: [userId])
+
+  routineWorkouts Routine_Workout[]
+  progress        Progress[]
+  savedRoutines   SavedRoutines[]
+}
+
+model Routine_Workout {
+  routineId   Int
+  workoutId   Int
+  sets        Int
+  reps        Int
+  timeMinutes Int?
+  calories    Int?
+  equipment   String?
+
+  routine Routine @relation(fields: [routineId], references: [routineId])
+  workout Workout @relation(fields: [workoutId], references: [workoutId])
+
+  @@id([routineId, workoutId])
+}
+
+model Progress {
+  progressId  Int            @id @default(autoincrement())
+  memberId    Int
+  routineId   Int
+  workoutId   Int? 
+  sessionId   String
+  status      ProgressStatus @default(NOT_STARTED)
+  completedAt DateTime?
+  isCompleted Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  member  Member   @relation(fields: [memberId], references: [memberId])
+  routine Routine  @relation(fields: [routineId], references: [routineId])
+  workout Workout? @relation(fields: [workoutId], references: [workoutId])
+
+  @@unique([memberId, routineId, workoutId, sessionId])
+}
+
+model SavedWorkouts {
+  savedWorkoutId Int      @id @default(autoincrement())
+  memberId       Int
+  workoutId      Int
+  date           DateTime @default(now())
+
+  member  Member  @relation(fields: [memberId], references: [memberId])
+  workout Workout @relation(fields: [workoutId], references: [workoutId])
+
+  @@unique([memberId, workoutId])
+}
+
+model SavedRoutines {
+  savedRoutineId Int      @id @default(autoincrement())
+  memberId       Int
+  routineId      Int
+  date           DateTime @default(now())
+
+  member  Member  @relation(fields: [memberId], references: [memberId])
+  routine Routine @relation(fields: [routineId], references: [routineId])
+
+  @@unique([memberId, routineId])
+}
+
+model Chat {
+  chatId    Int      @id @default(autoincrement())
+  memberId  Int
+  trainerId Int
+  createdAt DateTime @default(now())
+
+  member   Member    @relation(fields: [memberId], references: [memberId])
+  trainer  Trainer   @relation(fields: [trainerId], references: [trainerId])
+  messages Message[]
+
+  @@unique([memberId, trainerId]) 
+}
+
+model Message {
+  messageId Int      @id @default(autoincrement())
+  chatId    Int
+  senderId  Int
+  content   String
+  createdAt DateTime @default(now())
+
+  chat Chat @relation(fields: [chatId], references: [chatId])
 }

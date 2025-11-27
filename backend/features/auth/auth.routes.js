@@ -9,7 +9,7 @@ const authRouter = Router();
 authRouter.post(
   "/register",
   [
-    body("fullName").notEmpty().withMessage("Full name is required"),
+    body("userName").notEmpty().withMessage("Username is required"),
     body("email")
       .notEmpty()
       .isEmail()
@@ -24,6 +24,10 @@ authRouter.post(
       .notEmpty()
       .isLength({ min: 6 })
       .withMessage("Password must be at least 6 characters long"),
+    body("role")
+      .optional()
+      .isIn(["ADMIN", "TRAINER", "MEMBER"])
+      .withMessage("Role must be ADMIN, TRAINER, or MEMBER"),
   ],
   handleErrorMessage,
   authController.register
