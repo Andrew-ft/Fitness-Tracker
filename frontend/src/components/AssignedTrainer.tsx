@@ -94,7 +94,7 @@ export function AssignedTrainer({
                 <div className="flex flex-wrap items-center justify-between p-3 bg-card rounded-md shadow-sm">
                   <div className="mb-3">
                     <Link
-                      to={`/${role}/trainers/${assignedTrainer.id}`} // adjust route as needed
+                      to={`/${role}/trainers/${assignedTrainer.id}`} 
                       className="hover:underline"
                     >
                       <p className="font-semibold">{assignedTrainer.name}</p>

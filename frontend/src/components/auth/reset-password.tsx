@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft } from "lucide-react";
+import { motion } from "framer-motion";
 
 type FieldErrors = {
   email?: string;
@@ -68,7 +69,6 @@ export function ResetPasswordForm({
         delete errors.newPassword;
       }
 
-      // Confirm password must also match the updated newPassword
       if (confirmPassword && updatedFields.newPassword !== confirmPassword) {
         errors.confirmPassword = "Passwords do not match.";
       } else if (confirmPassword) {
@@ -99,21 +99,27 @@ export function ResetPasswordForm({
     setSuccessMessage(null);
 
     try {
-      const res = await API.post("/auth/reset-password", {
-        email,
-        oldPassword,
-        newPassword,
-        confirmPassword,
-      });
+      const res = await API.post(
+        "/auth/reset-password",
+        { email, oldPassword, newPassword, confirmPassword },
+        { withCredentials: true }
+      );
 
       if (res.status === 200) {
         setSuccessMessage("Password updated successfully. Redirecting...");
-        setTimeout(() => navigate("/login"), 1000);
+        setEmail("");
+        setOldPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+        setFieldErrors({});
+        setTimeout(() => navigate("/login"), 1500);
       } else {
         setFieldErrors({ email: res.data?.error || "Something went wrong." });
       }
     } catch (err: any) {
       const backendErrors = err.response?.data?.errors;
+      const backendMessage =
+        err.response?.data?.message || err.response?.data?.error;
 
       if (backendErrors && typeof backendErrors === "object") {
         const formattedErrors: FieldErrors = {};
@@ -128,7 +134,7 @@ export function ResetPasswordForm({
         });
         setFieldErrors(formattedErrors);
       } else {
-        setFieldErrors({ email: err.response?.data?.error || "Reset failed." });
+        setFieldErrors({ email: backendMessage || "Reset failed." });
       }
     } finally {
       setLoading(false);
@@ -137,101 +143,108 @@ export function ResetPasswordForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
-        <CardHeader>
-          <Link to="/login">
-            <ArrowLeft className="w-4 cursor-pointer" />
-          </Link>
-          <CardTitle>Reset Your Password</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit}>
-            <div className="flex flex-col gap-6">
-              {/* Email */}
-              <div className="grid gap-1.5">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    validateFields({ email: e.target.value });
-                  }}
-                  placeholder="Enter your email"
-                />
-                {fieldErrors.email && (
-                  <p className="text-sm text-red-500">{fieldErrors.email}</p>
-                )}
-              </div>
+      {/* ✅ Added Framer Motion wrapper */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      >
+        <Card>
+          <CardHeader>
+            <Link to="/login">
+              <ArrowLeft className="w-4 cursor-pointer" />
+            </Link>
+            <CardTitle>Reset Your Password</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit}>
+              <div className="flex flex-col gap-6">
+                {/* Email */}
+                <div className="grid gap-1.5">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      validateFields({ email: e.target.value });
+                    }}
+                    placeholder="Enter your email"
+                  />
+                  {fieldErrors.email && (
+                    <p className="text-sm text-red-500">{fieldErrors.email}</p>
+                  )}
+                </div>
 
-              {/* Old Password */}
-              <div className="grid gap-1.5">
-                <Label htmlFor="oldPassword">Old Password</Label>
-                <Input
-                  id="oldPassword"
-                  type="password"
-                  value={oldPassword}
-                  onChange={(e) => {
-                    setOldPassword(e.target.value);
-                    validateFields({ oldPassword: e.target.value });
-                  }}
-                  placeholder="Enter your old password"
-                />
-                {fieldErrors.oldPassword && (
-                  <p className="text-sm text-red-500">
-                    {fieldErrors.oldPassword}
-                  </p>
-                )}
-              </div>
+                {/* Old Password */}
+                <div className="grid gap-1.5">
+                  <Label htmlFor="oldPassword">Old Password</Label>
+                  <Input
+                    id="oldPassword"
+                    type="password"
+                    value={oldPassword}
+                    onChange={(e) => {
+                      setOldPassword(e.target.value);
+                      validateFields({ oldPassword: e.target.value });
+                    }}
+                    placeholder="Enter your old password"
+                  />
+                  {fieldErrors.oldPassword && (
+                    <p className="text-sm text-red-500">
+                      {fieldErrors.oldPassword}
+                    </p>
+                  )}
+                </div>
 
-              {/* New Password */}
-              <div className="grid gap-1.5">
-                <Label htmlFor="newPassword">New Password</Label>
-                <Input
-                  id="newPassword"
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => {
-                    setNewPassword(e.target.value);
-                    validateFields({ newPassword: e.target.value });
-                  }}
-                  placeholder="Enter new password"
-                />
-                {fieldErrors.newPassword && (
-                  <p className="text-sm text-red-500">
-                    {fieldErrors.newPassword}
-                  </p>
-                )}
-              </div>
+                {/* New Password */}
+                <div className="grid gap-1.5">
+                  <Label htmlFor="newPassword">New Password</Label>
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => {
+                      setNewPassword(e.target.value);
+                      validateFields({ newPassword: e.target.value });
+                    }}
+                    placeholder="Enter new password"
+                  />
+                  {fieldErrors.newPassword && (
+                    <p className="text-sm text-red-500">
+                      {fieldErrors.newPassword}
+                    </p>
+                  )}
+                </div>
 
-              {/* Confirm Password */}
-              <div className="grid gap-1.5">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => {
-                    setConfirmPassword(e.target.value);
-                    validateFields({ confirmPassword: e.target.value });
-                  }}
-                  placeholder="Confirm new password"
-                />
-                {fieldErrors.confirmPassword && (
-                  <p className="text-sm text-red-500">
-                    {fieldErrors.confirmPassword}
-                  </p>
-                )}
-              </div>
+                {/* Confirm Password */}
+                <div className="grid gap-1.5">
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value);
+                      validateFields({ confirmPassword: e.target.value });
+                    }}
+                    placeholder="Confirm new password"
+                  />
+                  {fieldErrors.confirmPassword && (
+                    <p className="text-sm text-red-500">
+                      {fieldErrors.confirmPassword}
+                    </p>
+                  )}
+                </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Resetting..." : "Confirm"}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? "Resetting..." : "Confirm"}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 }

@@ -20,14 +20,14 @@ import TrainerRoutines from "./components/trainer/trainerRoutine/trainer-routine
 import TrainerMembers from "./components/trainer/trainerMember/trainer-member.tsx";
 import TrainerProfile from "./components/trainer/trainerProfile/trainer-profile.tsx";
 
-import MemberDashboard from "./pages/member-dashboard.tsx";
-import MemberWorkout from "./pages/member-workout.tsx";
-import MemberRoutines from "./pages/member-routine.tsx";
-import MemberProfile from "./pages/member-profile.tsx";
+import MemberDashboard from "./components/member/memberDashboard/member-dashboard.tsx";
+import MemberWorkout from "./components/member/memberWorkout/member-workout.tsx";
+import MemberRoutines from "./components/member/memberRoutine/member-routine.tsx";
+import MemberProfile from "./components/member/memberProfile/member-profile.tsx";
 
 import PrivateRoute from "./components/routing/PrivateRoute.tsx";
 import TrainerPage from "./pages/trainer/trainer-page.tsx";
-import MemberPage from "./pages/member-page.tsx";
+import MemberPage from "./pages/member/member-page.tsx";
 import AdminAddTrainer from "./components/admin/adminTrainer/admin-addtrainer.tsx";
 import AdminAddMember from "./components/admin/adminMember/admin-addmember.tsx";
 import AdminAddWorkout from "./components/admin/adminWorkout/admin-addworkout.tsx";
@@ -37,10 +37,16 @@ import AdminMemberDetails from "./components/admin/adminMember/admin-memberdetai
 import AdminWorkoutDetails from "./components/admin/adminWorkout/admin-workoutdetails.tsx";
 import TrainerAddWorkout from "./components/trainer/trainerWorkout/trainer-addworkout.tsx";
 import TrainerWorkoutDetails from "./components/trainer/trainerWorkout/trainer-workoutdetails.tsx";
-import TrainerAddRoutine from "./components/trainer/trainerRoutine/trainer-routinedetails.tsx";
+import TrainerAddRoutine from "./components/trainer/trainerRoutine/trainer-addroutine.tsx";
 import TrainerRoutineDetails from "./components/trainer/trainerRoutine/trainer-routinedetails.tsx";
 import TrainerAddMember from "./components/trainer/trainerMember/trainer-addmember.tsx";
 import TrainerMemberDetails from "./components/trainer/trainerMember/trainer-memberdetails.tsx";
+import MemberWorkoutDetails from "./components/member/memberWorkout/member-workoutdetails.tsx";
+import MemberRoutineDetails from "./components/member/memberRoutine/member-routinedetails.tsx";
+import MemberAddRoutines from "./components/member/memberRoutine/member-addroutine.tsx";
+import MemberTrainerProfile from "./components/member/memberProfile/member-trainerprofile.tsx";
+import MemberChat from "./components/member/chat/member-chat.tsx";
+import TrainerChat from "./components/trainer/chat/trainer-chat.tsx";
 
 export default function RouteLayout() {
   return (
@@ -56,7 +62,7 @@ export default function RouteLayout() {
         <Route
           path="/admin"
           element={
-            <PrivateRoute allowedRoles={["admin"]}>
+            <PrivateRoute allowedRoles={["ADMIN"]}>
               <AdminPage />
             </PrivateRoute>
           }
@@ -81,7 +87,7 @@ export default function RouteLayout() {
         <Route
           path="/trainer"
           element={
-            <PrivateRoute allowedRoles={["trainer"]}>
+            <PrivateRoute allowedRoles={["TRAINER"]}>
               <TrainerDashboard />
             </PrivateRoute>
           }
@@ -97,14 +103,16 @@ export default function RouteLayout() {
           <Route path="members" element={<TrainerMembers />} />
           <Route path="members/add" element={<TrainerAddMember />} />
           <Route path="members/:id" element={<TrainerMemberDetails />} />
-          <Route path="profile" element={<TrainerProfile />} />
+          {/* ✅ update profile route to accept ID */}
+          <Route path="profile/:id" element={<TrainerProfile />} />
+          <Route path="chat" element={<TrainerChat />} />
         </Route>
 
         {/* Member Dashboard */}
         <Route
           path="/member"
           element={
-            <PrivateRoute allowedRoles={["member"]}>
+            <PrivateRoute allowedRoles={["MEMBER"]}>
               <MemberDashboard />
             </PrivateRoute>
           }
@@ -112,8 +120,13 @@ export default function RouteLayout() {
           <Route index element={<MemberPage />} />
           <Route path="dashboard" element={<MemberDashboard />} />
           <Route path="workout" element={<MemberWorkout />} />
+          <Route path="workouts/:id" element={<MemberWorkoutDetails />} />
           <Route path="routines" element={<MemberRoutines />} />
+          <Route path="routines/add" element={<MemberAddRoutines />} />
+          <Route path="routines/:id" element={<MemberRoutineDetails />} />
           <Route path="profile" element={<MemberProfile />} />
+          <Route path="profile/trainer/:id" element={<MemberTrainerProfile />} />
+          <Route path="chat" element={<MemberChat />} />
         </Route>
 
         {/* Not Found */}

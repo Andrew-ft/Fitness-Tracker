@@ -1,6 +1,7 @@
 import * as React from "react";
 import {
   Dumbbell,
+  MessageCircle,
   SquareTerminal,
   TableProperties,
   User,
@@ -27,6 +28,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Outlet } from "react-router";
+import { motion } from "framer-motion";
 
 export const data = {
   navMain: [
@@ -51,6 +53,11 @@ export const data = {
       icon: Users,
     },
     {
+      title: "Chat",
+      url: "/trainer/chat",
+      icon: MessageCircle,
+    },
+    {
       title: "Profile",
       url: "/trainer/profile",
       icon: User,
@@ -73,6 +80,11 @@ export default function Trainer() {
     setUser({ name, email, avatar });
   }, []);
   return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
     <SidebarProvider>
       <Sidebar collapsible="icon">
         <SidebarHeader></SidebarHeader>
@@ -107,6 +119,7 @@ export default function Trainer() {
           <Outlet />
         </div>
       </SidebarInset>
-    </SidebarProvider>
+      </SidebarProvider>
+    </motion.div>
   );
 }

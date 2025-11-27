@@ -22,14 +22,14 @@ import TrainerRoutines from "./components/trainer/trainerRoutine/trainer-routine
 import TrainerMembers from "./components/trainer/trainerMember/trainer-member.tsx";
 import TrainerProfile from "./components/trainer/trainerProfile/trainer-profile.tsx";
 
-import MemberDashboard from "./pages/member-dashboard.tsx";
-import MemberWorkout from "./pages/member-workout.tsx";
-import MemberRoutines from "./pages/member-routine.tsx";
-import MemberProfile from "./pages/member-profile.tsx";
+import MemberDashboard from "./components/member/memberDashboard/member-dashboard.tsx";
+import MemberWorkout from "./components/member/memberWorkout/member-workout.tsx";
+import MemberRoutines from "./components/member/memberRoutine/member-routine.tsx";
+import MemberProfile from "./components/member/memberProfile/member-profile.tsx";
 
 import PrivateWrapper from "./components/routing/PrivateWrapper.tsx";
 import TrainerPage from "./pages/trainer/trainer-page.tsx";
-import MemberPage from "./pages/member-page.tsx";
+import MemberPage from "./pages/member/member-page.tsx";
 import AdminAddWorkout from "./components/admin/adminWorkout/admin-addworkout.tsx";
 import AdminAddRoutine from "./components/admin/adminRoutine/admin-addroutine.tsx";
 import AdminTrainerDetails from "./components/admin/adminTrainer/admin-trainerdetails.tsx";
@@ -38,10 +38,16 @@ import AdminWorkoutDetails from "./components/admin/adminWorkout/admin-workoutde
 import AdminRoutineDetails from "./components/admin/adminRoutine/admin-routinedetails.tsx";
 import TrainerAddWorkout from "./components/trainer/trainerWorkout/trainer-addworkout.tsx";
 import TrainerWorkoutDetails from "./components/trainer/trainerWorkout/trainer-workoutdetails.tsx";
-import TrainerAddRoutine from "./components/trainer/trainerRoutine/trainer-routinedetails.tsx";
+import TrainerAddRoutine from "./components/trainer/trainerRoutine/trainer-addroutine.tsx";
 import TrainerRoutineDetails from "./components/trainer/trainerRoutine/trainer-routinedetails.tsx";
 import TrainerAddMember from "./components/trainer/trainerMember/trainer-addmember.tsx";
 import TrainerMemberDetails from "./components/trainer/trainerMember/trainer-memberdetails.tsx";
+import MemberWorkoutDetails from "./components/member/memberWorkout/member-workoutdetails.tsx";
+import MemberRoutineDetails from "./components/member/memberRoutine/member-routinedetails.tsx";
+import MemberAddRoutines from "./components/member/memberRoutine/member-addroutine.tsx";
+import MemberTrainerProfile from "./components/member/memberProfile/member-trainerprofile.tsx";
+import MemberChat from "./components/member/chat/member-chat.tsx";
+import TrainerChat from "./components/trainer/chat/trainer-chat.tsx";
 
 export const router = createBrowserRouter([
   {
@@ -63,7 +69,7 @@ export const router = createBrowserRouter([
   {
     path: "/admin",
     element: (
-      <PrivateWrapper allowedRoles={["admin"]}>
+      <PrivateWrapper allowedRoles={["ADMIN"]}>
         <AdminPage />
       </PrivateWrapper>
     ),
@@ -88,7 +94,7 @@ export const router = createBrowserRouter([
   {
     path: "/trainer",
     element: (
-      <PrivateWrapper allowedRoles={["trainer"]}>
+      <PrivateWrapper allowedRoles={["TRAINER"]}>
         <TrainerPage />
       </PrivateWrapper>
     ),
@@ -105,21 +111,27 @@ export const router = createBrowserRouter([
       { path: "members/add", element: <TrainerAddMember /> },
       { path: "members/:id", element: <TrainerMemberDetails /> },
       { path: "profile", element: <TrainerProfile /> },
+      { path: "chat", element: <TrainerChat /> }
     ],
   },
   {
     path: "/member",
     element: (
-      <PrivateWrapper allowedRoles={["member"]}>
+      <PrivateWrapper allowedRoles={["MEMBER"]}>
         <MemberPage />
       </PrivateWrapper>
     ),
     children: [
       { index: true, element: <MemberDashboard /> },
       { path: "dashboard", element: <MemberDashboard /> },
-      { path: "workout", element: <MemberWorkout /> },
+      { path: "workouts", element: <MemberWorkout /> },
+      { path: "workouts/:id", element: <MemberWorkoutDetails /> },
       { path: "routines", element: <MemberRoutines /> },
+      { path: "routines/add", element: <MemberAddRoutines /> },
+      { path: "routines/:id", element: <MemberRoutineDetails /> },
       { path: "profile", element: <MemberProfile /> },
+      { path: "profile/trainer", element: <MemberTrainerProfile /> },
+      { path: "chat", element: <MemberChat /> }
     ],
   },
   {

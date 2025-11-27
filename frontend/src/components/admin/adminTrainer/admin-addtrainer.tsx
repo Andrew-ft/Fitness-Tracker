@@ -1,20 +1,129 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../../ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Input } from "../../ui/input";
 import { Calendar28 } from "../../DatePicker";
 import { Textarea } from "../../ui/textarea";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "../../ui/select";
+
+import API from "@/lib/axios";
 import { SelectGender } from "../../selectGender";
-import { SelectSpecialization } from "../../selectSpecialization";
-import { SelectClientTypes } from "../../selectClientTypes";
+
+import { motion } from "framer-motion";
+
+const SPECIALIZATION_OPTIONS = [
+  "Strength & Conditioning",
+  "Bodybuilding",
+  "Weight Loss",
+  "HIIT",
+  "Flexibility",
+  "Sports Performance",
+];
+
+const CLIENT_TYPE_OPTIONS = [
+  "General Population",
+  "Athletes",
+  "Beginners",
+  "Seniors",
+  "Women",
+  "Youth",
+];
 
 export default function AdminAddTrainer() {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    fullname: "",
+    email: "",
+    phone: "",
+    dob: "",
+    gender: "",
+    bio: "",
+    certificate: "",
+    experience: "",
+    specialization: "",
+    clientType: "",
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (field: string, value: any) => {
+    setFormData({ ...formData, [field]: value });
+    setErrors({ ...errors, [field]: "" });
+  };
+
+  const validate = () => {
+    const newErrors: Record<string, string> = {};
+    if (!formData.fullname.trim()) newErrors.fullname = "Full Name is required";
+    if (!formData.email.trim()) newErrors.email = "Email is required";
+    if (!formData.phone.trim()) newErrors.phone = "Phone Number is required";
+    if (!formData.dob.trim()) newErrors.dob = "Date of Birth is required";
+    if (!formData.gender.trim()) newErrors.gender = "Gender is required";
+    if (!formData.bio.trim()) newErrors.bio = "Bio is required";
+    if (!formData.certificate.trim())
+      newErrors.certificate = "Certificate is required";
+    if (!formData.specialization.trim())
+      newErrors.specialization = "Specialization is required";
+    if (!formData.experience.trim())
+      newErrors.experience = "Experience is required";
+    if (!formData.clientType.trim())
+      newErrors.clientType = "Client Type is required";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate()) return;
+
+    setLoading(true);
+    try {
+      const payload = {
+        userName: formData.fullname,
+        email: formData.email,
+        phoneNumber: formData.phone,
+        dateOfBirth: formData.dob,
+        gender: formData.gender,
+        bio: formData.bio,
+        certificate: formData.certificate,
+        experiencedYears: Number(formData.experience),
+        specialization: formData.specialization,
+        clientTypes: formData.clientType,
+        password: "defaultpassword123",
+      };
+
+      const response = await API.post("/admin/trainers", payload);
+
+      if (response.data.success) {
+        navigate("/admin/trainers");
+      } else {
+        setErrors({ form: response.data.error || "Failed to create trainer" });
+      }
+    } catch (err: any) {
+      console.error(err);
+      setErrors({ form: err.response?.data?.error || err.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div>
-      <div className="flex items-center gap-5 mb-5 ">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
+      <div className="flex items-center gap-5 mb-5">
         <div>
           <Link to="/admin/trainers">
-            <Button className="" variant="outline">
+            <Button variant="outline">
               <ArrowLeft />
               Back
             </Button>
@@ -26,111 +135,169 @@ export default function AdminAddTrainer() {
         </div>
       </div>
 
-      <form action="">
-        <div className="my-5 font-semibold text-lg flex  w-5/6 mx-auto">
+      <form onSubmit={handleSubmit}>
+        {/* Personal Info Section */}
+        <div className="my-5 font-semibold text-lg flex w-5/6 mx-auto">
           Personal Information
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-4/5 mx-auto mb-5">
-          <div className="grid gap-3 mb-3">
+          {/* Full Name */}
+          <div className="grid gap-3 md:w-4/5">
             <p>Full Name</p>
             <Input
-              id="fullname"
-              type="text"
-              className="w-full md:w-4/5 text-sm"
-              placeholder="Name"
+              value={formData.fullname}
+              onChange={(e) => handleChange("fullname", e.target.value)}
             />
+            {errors.fullname && (
+              <p className="text-red-500 text-sm">{errors.fullname}</p>
+            )}
           </div>
 
-          <div className="grid gap-3 mb-3">
+          {/* Email */}
+          <div className="grid gap-3 md:w-4/5">
             <p>Email</p>
             <Input
-              id="email"
-              type="email"
-              className="w-full md:w-4/5 text-sm"
-              placeholder="name@gmail.com"
+              value={formData.email}
+              onChange={(e) => handleChange("email", e.target.value)}
             />
+            {errors.email && (
+              <p className="text-red-500 text-sm">{errors.email}</p>
+            )}
           </div>
 
-          <div className="grid gap-3 mb-3">
+          {/* Phone */}
+          <div className="grid gap-3 md:w-4/5">
             <p>Phone Number</p>
             <Input
-              id="phone"
-              type="tel"
-              className="w-full md:w-4/5 text-sm"
-              placeholder="09000000000"
+              value={formData.phone}
+              onChange={(e) => handleChange("phone", e.target.value)}
             />
+            {errors.phone && (
+              <p className="text-red-500 text-sm">{errors.phone}</p>
+            )}
           </div>
 
-          <div className="grid gap-3 mb-3">
+          {/* DOB */}
+          <div className="grid gap-3 md:w-4/5">
             <p>Date of Birth</p>
-            <div className="w-full md:w-4/5 text-sm">
-              <Calendar28 onChange={function (): void {
-                throw new Error("Function not implemented.");
-              } } value={""} />
-            </div>
+            <Calendar28
+              value={formData.dob}
+              onChange={(val: string) => handleChange("dob", val)}
+            />
+            {errors.dob && <p className="text-red-500 text-sm">{errors.dob}</p>}
           </div>
 
-          <div className="grid gap-3 mb-3">
-            <p>Last Login Date</p>
-            <Input
-              id="gender"
-              type="text"
-              className="w-full md:w-4/5 text-sm"
-              placeholder="2023-10-01 12:00:00"
-              disabled
+          {/* Gender */}
+          <div className="grid gap-3 ">
+            <p>Gender</p>
+            <SelectGender
+              value={formData.gender}
+              onValueChange={(val: string) => handleChange("gender", val)}
+              error={errors.gender}
             />
           </div>
 
-          <div className="grid gap-3 mb-3">
-            <p>Gender</p>
-            <SelectGender/>
-          </div>
-
-          <div className="grid gap-3 mb-3 md:col-span-2 md:w-9/10 w-full">
+          {/* Bio */}
+          <div className="md:col-span-2 grid gap-3 md:w-9/10">
             <p>Bio</p>
             <Textarea
-              id="bio"
-              className="w-full text-sm"
-              placeholder="Write a short bio about the trainer"
+              value={formData.bio}
+              onChange={(e) => handleChange("bio", e.target.value)}
             />
+            {errors.bio && <p className="text-red-500 text-sm">{errors.bio}</p>}
           </div>
         </div>
 
-        <div className="my-5 font-semibold text-lg flex  w-5/6 mx-auto">
+        {/* Qualification Section */}
+        <div className="my-5 font-semibold text-lg flex w-5/6 mx-auto">
           Qualification
         </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-4/5 mx-auto mb-5">
-          <div className="grid gap-3 mb-3">
+          {/* Certificate */}
+          <div className="grid gap-3 md:w-4/5">
             <p>Certificate</p>
-            <Input id="file" type="file" className="md:w-4/5 w-full text-sm" />
+            <Input
+              type="file"
+              onChange={(e) => handleChange("certificate", e.target.value)}
+            />
+            {errors.certificate && (
+              <p className="text-red-500 text-sm">{errors.certificate}</p>
+            )}
           </div>
 
-          <div className="grid gap-3 mb-3">
+          {/* Specialization */}
+          <div className="grid gap-3 md:w-4/5">
             <p>Specialization</p>
-            <SelectSpecialization />
+            <Select
+              value={formData.specialization}
+              onValueChange={(val) => handleChange("specialization", val)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select specialization" />
+              </SelectTrigger>
+              <SelectContent>
+                {SPECIALIZATION_OPTIONS.map((opt) => (
+                  <SelectItem key={opt} value={opt}>
+                    {opt}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.specialization && (
+              <p className="text-red-500 text-sm">{errors.specialization}</p>
+            )}
           </div>
 
-          <div className="grid gap-3 mb-3">
+          {/* Experience */}
+          <div className="grid gap-3 md:w-4/5">
             <p>Experience Years</p>
             <Input
-              id="years"
+              value={formData.experience}
               type="number"
-              className="md:w-4/5 w-full text-sm"
-              placeholder="3"
+              onChange={(e) => handleChange("experience", e.target.value)}
             />
+            {errors.experience && (
+              <p className="text-red-500 text-sm">{errors.experience}</p>
+            )}
           </div>
 
-          <div className="grid gap-3 mb-3">
+          {/* Client Type */}
+          <div className="grid gap-3 md:w-4/5">
             <p>Clients Type Served</p>
-            <SelectClientTypes />
+            <Select
+              value={formData.clientType}
+              onValueChange={(val) => handleChange("clientType", val)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select client type" />
+              </SelectTrigger>
+              <SelectContent>
+                {CLIENT_TYPE_OPTIONS.map((opt) => (
+                  <SelectItem key={opt} value={opt}>
+                    {opt}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.clientType && (
+              <p className="text-red-500 text-sm">{errors.clientType}</p>
+            )}
           </div>
         </div>
+
+        {/* FORM ERROR */}
+        {errors.form && (
+          <p className="text-red-500 text-sm w-4/5 mx-auto mb-3">
+            {errors.form}
+          </p>
+        )}
 
         <div className="flex gap-4 w-4/5 mx-auto">
-          <Button>Create New Trainer</Button>
+          <Button type="submit" disabled={loading}>
+            {loading ? "Creating..." : "Create New Trainer"}
+          </Button>
         </div>
       </form>
-    </div>
+    </motion.div>
   );
 }

@@ -20,7 +20,6 @@ interface Calendar28Props {
 
 function formatDate(date: Date | undefined) {
   if (!date) return "";
-  // Keep the same display format as original
   return date.toLocaleDateString("en-US", {
     day: "2-digit",
     month: "long",

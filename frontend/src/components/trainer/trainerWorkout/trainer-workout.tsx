@@ -1,68 +1,98 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Button } from "../../ui/button";
+import { useState, useEffect } from "react";
+import API from "@/lib/axios";
+import { MuscleGroups, type MuscleGroup } from "@/lib/constants";
 import { MuscleGroupBtnGroup } from "../../MuscleGroupBtnGroup";
 import WorkoutCard from "../../WorkoutCard";
-
-const initialWorkouts = [
-  { id: 1, title: "Bench Press", muscleGroup: "Chest", difficulty: "Intermediate" },
-  { id: 2, title: "Pull Up", muscleGroup: "Back", difficulty: "Advanced" },
-  { id: 3, title: "Shoulder Press", muscleGroup: "Shoulders", difficulty: "Intermediate" },
-  { id: 4, title: "Bicep Curl", muscleGroup: "Arms", difficulty: "Beginner" },
-  { id: 5, title: "Plank", muscleGroup: "Core", difficulty: "Beginner" },
-  { id: 6, title: "Squat", muscleGroup: "Legs", difficulty: "Intermediate" },
-  { id: 7, title: "Jump Rope", muscleGroup: "Cardio", difficulty: "Beginner" },
-];
+import { Link } from "react-router-dom";
+import { Button } from "../../ui/button";
+import { motion } from "framer-motion";
 
 export default function TrainerWorkout() {
-  const [activeCategory, setActiveCategory] = useState("All");
-  const [workouts, setWorkouts] = useState(initialWorkouts);
+  const [activeCategory, setActiveCategory] = useState<MuscleGroup>("ALL");
+  const [workouts, setWorkouts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // delete handler
-  const handleDelete = (id: number) => {
-    setWorkouts((prev) => prev.filter((workout) => workout.id !== id));
+  const fetchWorkouts = async () => {
+    try {
+      setLoading(true);
+      const res = await API.get("/workout");
+      setWorkouts(res.data.workouts || []);
+    } catch (err) {
+      console.error("Error fetching workouts:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchWorkouts();
+  }, []);
+
+  const handleDelete = async (id: number) => {
+    try {
+      await API.delete(`/workout/${id}`);
+      setWorkouts((prev) => prev.filter((w) => w.workoutId !== id));
+    } catch (err) {
+      console.error("Delete failed:", err);
+    }
   };
 
   const filteredWorkouts =
-    activeCategory === "All"
+    activeCategory === "ALL"
       ? workouts
       : workouts.filter((w) => w.muscleGroup === activeCategory);
 
+  if (loading) return <p>Loading workouts...</p>;
+
   return (
-    <div>
-      <div className="mb-10 flex flex-wrap gap-10 items-center justify-between">
-        <div>
-          <h1 className="font-semibold text-2xl">Workouts</h1>
-          <p className="text-sm opacity-50">
-            Discover and manage workout exercises
-          </p>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
+      <div>
+        {/* Header */}
+        <div className="mb-10 flex flex-wrap gap-10 items-center justify-between">
+          <div>
+            <h1 className="font-semibold text-2xl">Workouts</h1>
+            <p className="text-sm opacity-50">
+              Discover and manage workout exercises
+            </p>
+          </div>
+          <div>
+            <Link to="/trainer/workouts/add">
+              <Button>Add New Workout</Button>
+            </Link>
+          </div>
         </div>
-        <div>
-          <Link to="/trainer/workouts/add">
-            <Button>Add New Workout</Button>
-          </Link>
-        </div>
-      </div>
 
-      <div className="mb-5 flex">
-        <MuscleGroupBtnGroup
-          active={activeCategory}
-          onSelect={(cat) => setActiveCategory(cat)}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 justify-items-center">
-        {filteredWorkouts.map((workout) => (
-          <WorkoutCard
-            key={workout.id}
-            id={workout.id}
-            title={workout.title}
-            muscleGroup={workout.muscleGroup}
-            difficulty={workout.difficulty}
-            onDelete={handleDelete}  
+        {/* Muscle Group Filter */}
+        <div className="mb-5 flex">
+          <MuscleGroupBtnGroup
+            active={activeCategory}
+            onSelect={(cat) => setActiveCategory(cat)}
           />
-        ))}
+        </div>
+
+        {/* Workout Cards */}
+        <div className="flex flex-wrap gap-5 w-fit">
+          {filteredWorkouts.length > 0 ? (
+            filteredWorkouts.map((w) => (
+              <WorkoutCard
+                key={w.workoutId}
+                id={w.workoutId}
+                title={w.workoutName}
+                muscleGroup={w.muscleGroup}
+                difficulty={w.difficulty}
+                description={w.description}
+                onDelete={handleDelete}
+              />
+            ))
+          ) : (
+            <p className="opacity-50">No workouts found.</p>
+          )}
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -1,170 +1,159 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "gridjs/dist/theme/mermaid.css";
 import { Grid } from "gridjs-react";
 import { h } from "gridjs";
 import { useNavigate } from "react-router-dom";
+import API from "@/lib/axios";
 
-interface AdminMemberTableProps {
-  searchQuery: string;
-  statusFilter: string;
+interface Member {
+  memberId: number;
+  user: {
+    role: string;
+    userId: number;
+    userName: string;
+    email: string;
+  };
+  trainer?: { user: { userName: string } } | null;
+  goal?: string;
+  medicalNotes?: string;
+  savedWorkouts?: any[];
+  savedRoutines?: any[];
 }
 
-// Helper to decode JWT and extract role
-const getRoleFromToken = (token: string): string | null => {
-  try {
-    const base64Payload = token.split(".")[1];
-    const payload = JSON.parse(atob(base64Payload));
-    return payload?.role || null;
-  } catch (err) {
-    console.error("Invalid token", err);
-    return null;
-  }
-};
+interface MemberTableProps {
+  searchQuery: string;
+  endpoint: string;
+  role?: "admin" | "trainer";
+}
 
-const MemberTable: React.FC<AdminMemberTableProps> = ({
+const MemberTable: React.FC<MemberTableProps> = ({
   searchQuery,
-  statusFilter,
+  endpoint,
+  role = "admin",
 }) => {
   const navigate = useNavigate();
+  const [members, setMembers] = useState<Member[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
-  // 🧠 In a real app, you'd get this from localStorage, cookies, or context
-// Get token from localStorage or context instead of hardcoding
-const token = localStorage.getItem("token");
-const role = token ? getRoleFromToken(token) : "admin"; // fallback to admin
+  const isTrainer = role === "trainer"; 
 
+  useEffect(() => {
+    const fetchMembers = async () => {
+      setLoading(true);
+      setErrorMsg("");
+      try {
+        const res = await API.get(endpoint);
+        if (res.data && Array.isArray(res.data.members)) {
+          setMembers(res.data.members);
+        } else {
+          setMembers([]);
+        }
+      } catch (err) {
+        console.error(err);
+        setErrorMsg("Failed to fetch members");
+        setMembers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // State for member data
-  const [members, setMembers] = useState([
-    {
-      id: 1,
-      name: "Alice Johnson",
-      email: "alice@example.com",
-      status: "Active",
-      trainer: "John Smith",
-      joined: "2024-01-12",
-      routines: 12,
-      caloriesBurned: 25000,
-    },
-    {
-      id: 2,
-      name: "Bob Williams",
-      email: "bob@example.com",
-      status: "Inactive",
-      trainer: "Sarah Lee",
-      joined: "2023-11-05",
-      routines: 8,
-      caloriesBurned: 18000,
-    },
-    {
-      id: 3,
-      name: "Charlie Brown",
-      email: "charlie@example.com",
-      status: "Active",
-      trainer: "David Miller",
-      joined: "2024-03-20",
-      routines: 15,
-      caloriesBurned: 32000,
-    },
-  ]);
+    fetchMembers();
+  }, [endpoint]);
 
-  // Filtering
-  const filteredData = members.filter(
-    (row) =>
-      (statusFilter === "All" || row.status === statusFilter) &&
-      (row.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        row.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        row.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        row.trainer.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredMembers = members.filter(
+    (m) =>
+      m.user.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      m.user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (m.trainer?.user.userName || "")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase())
   );
 
-  const renderStatusBadge = (status: string) => {
-    const base =
-      "px-2 py-0.5 rounded-full text-white text-xs font-semibold";
-    return status === "Active"
-      ? h("span", { className: `${base} bg-green-700` }, status)
-      : h("span", { className: `${base} bg-secondary` }, status);
+  const handleViewDetails = (member: Member) => {
+    const basePath = role === "admin" ? "/admin/members" : "/trainer/members";
+    navigate(`${basePath}/${member.memberId}`, { state: { member } });
   };
 
-  // Delete function
-  const handleDelete = (id: number) => {
-    if (window.confirm("Are you sure you want to delete this member?")) {
-      setMembers((prev) => prev.filter((member) => member.id !== id));
+  const columns = [
+    { name: "Member" },
+    ...(!isTrainer ? [{ name: "Trainer" }] : []),
+    { name: "Goal" },
+    { name: "Medical Notes" },
+    { name: "Saved Routines" },
+    { name: "Saved Workouts" },
+    { name: "Action" },
+  ];
+
+  const rows = filteredMembers.map((member) => {
+    const row: any[] = [];
+
+    row.push(
+      h("div", { className: "flex flex-col items-center" }, [
+        h(
+          "button",
+          {
+            className: "font-semibold text-gray-900 cursor-pointer",
+            onClick: () => handleViewDetails(member),
+          },
+          member.user.userName
+        ),
+        h(
+          "button",
+          {
+            className: "text-sm underline cursor-pointer",
+            onClick: () => handleViewDetails(member),
+          },
+          member.user.email
+        ),
+      ])
+    );
+
+    if (!isTrainer) {
+      row.push(
+        h(
+          "div",
+          { className: "text-center" },
+          member.trainer?.user.userName || "Unassigned"
+        )
+      );
     }
-  };
+
+    // Goal
+    row.push(h("div", { className: "text-center" }, member.goal || "N/A"));
+
+    // Medical Notes
+    row.push(h("div", { className: "text-center" }, member.medicalNotes || "N/A"));
+
+    // Saved Routines
+    row.push(h("div", { className: "text-center w-16" }, member.savedRoutines?.length || 0));
+
+    // Saved Workouts
+    row.push(h("div", { className: "text-center w-16" }, member.savedWorkouts?.length || 0));
+
+    // Action
+    row.push(
+      h("div", { className: "flex justify-center gap-2" }, [
+        h(
+          "button",
+          {
+            className:
+              "px-3 py-1 text-white bg-red-600 rounded-md border border-black-300 cursor-pointer",
+            onClick: () => handleViewDetails(member),
+          },
+          "View"
+        ),
+      ])
+    );
+
+    return row;
+  });
 
   return (
     <div className="md:p-5 md:py-0 py-5 text-sm font-semibold">
-      <Grid
-        data={filteredData.map((row) => [
-          // Member Name + Email
-          h("div", { className: "flex flex-col items-center" }, [
-            h(
-              "span",
-              { className: "font-semibold text-gray-900" },
-              row.name
-            ),
-            h(
-              "button",
-              {
-                className: "text-sm underline cursor-pointer",
-                onClick: () => navigate(`/${role}/members/${row.id}`),
-              },
-              row.email
-            ),
-          ]),
-          // Status
-          h(
-            "div",
-            { className: "flex justify-center" },
-            renderStatusBadge(row.status)
-          ),
-          // Trainer
-          h("div", { className: "text-center" }, row.trainer),
-          // Joined Date
-          h("div", { className: "text-center" }, row.joined),
-          // Routines
-          h("div", { className: "text-center w-16" }, row.routines.toString()),
-          // Calories Burned
-          h(
-            "div",
-            { className: "text-center" },
-            `${row.caloriesBurned.toLocaleString()} kcal`
-          ),
-          // Actions
-          h("div", { className: "flex justify-center gap-2" }, [
-            h(
-              "button",
-              {
-                className:
-                  "px-3 py-1 text-black border border-black-300 rounded cursor-pointer",
-                onClick: () => navigate(`/${role}/members/${row.id}`),
-              },
-              "Edit"
-            ),
-            h(
-              "button",
-              {
-                className:
-                  "px-3 py-1 bg-primary text-white rounded-md cursor-pointer",
-                onClick: () => handleDelete(row.id),
-              },
-              "Delete"
-            ),
-          ]),
-        ])}
-        columns={[
-          { name: "Member" },
-          { name: "Status" },
-          { name: "Trainer" },
-          { name: "Joined" },
-          { name: "Routines" },
-          { name: "Calories Burned" },
-          { name: "Action" },
-        ]}
-        search={false}
-        sort={false}
-        pagination={{ limit: 2 }}
-      />
+      {loading && <p>Loading members...</p>}
+      {errorMsg && <p className="text-red-600 text-center font-semibold mb-3">{errorMsg}</p>}
+      <Grid data={rows} columns={columns} search={false} sort={false} pagination={{ limit: 5 }} />
     </div>
   );
 };

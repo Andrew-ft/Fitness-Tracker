@@ -7,28 +7,57 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { MuscleGroup } from "@/lib/enums";
 
 interface SelectMuscleGroupProps {
-  value?: string;
-  onChange?: (val: string) => void;
+  value?: MuscleGroup | MuscleGroup[];
+  onChange?: (val: MuscleGroup | MuscleGroup[]) => void;
   disabled?: boolean;
+  multiple?: boolean;
 }
 
-export function SelectMuscleGroup({ value, onChange, disabled }: SelectMuscleGroupProps) {
+export function SelectMuscleGroup({
+  value,
+  onChange,
+  disabled,
+  multiple = false,
+}: SelectMuscleGroupProps) {
+  const options = Object.values(MuscleGroup).filter(
+    (mg) => mg !== MuscleGroup.ALL
+  );
+
+  const handleChange = (val: string) => {
+    if (multiple) {
+      const current = Array.isArray(value) ? [...value] : [];
+      if (current.includes(val as MuscleGroup)) {
+        onChange?.(current.filter((v) => v !== val));
+      } else {
+        onChange?.([...current, val as MuscleGroup]);
+      }
+    } else {
+      onChange?.(val as MuscleGroup);
+    }
+  };
+
   return (
-    <Select value={value} onValueChange={onChange} disabled={disabled}>
+    <Select
+      value={multiple ? undefined : (value as string)}
+      onValueChange={handleChange}
+      disabled={disabled}
+    >
       <SelectTrigger className="md:w-4/5 w-full">
-        <SelectValue placeholder="Select Muscle Group" />
+        <SelectValue
+          placeholder={multiple ? "Select Muscle Groups" : "Select Muscle Group"}
+        />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
           <SelectLabel>Muscle Group</SelectLabel>
-          <SelectItem value="Chest">Chest</SelectItem>
-          <SelectItem value="Back">Back</SelectItem>
-          <SelectItem value="Shoulders">Shoulders</SelectItem>
-          <SelectItem value="Arms">Arms</SelectItem>
-          <SelectItem value="Legs">Legs</SelectItem>
-          <SelectItem value="Core">Core</SelectItem>
+          {options.map((mg) => (
+            <SelectItem key={mg} value={mg}>
+              {mg.charAt(0) + mg.slice(1).toLowerCase()}
+            </SelectItem>
+          ))}
         </SelectGroup>
       </SelectContent>
     </Select>

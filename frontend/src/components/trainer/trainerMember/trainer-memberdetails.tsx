@@ -1,226 +1,238 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
 import { Button } from "../../ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Input } from "../../ui/input";
 import { Calendar28 } from "../../DatePicker";
 import { Textarea } from "../../ui/textarea";
 import { SelectGender } from "../../selectGender";
-import { AssignedTrainer } from "@/components/AssignedTrainer";
-import type { Trainer } from "../../../type.ts";
-import MemberProfile from "@/components/MemberProfile.tsx";
-
-const mockTrainers: Trainer[] = [
-  { id: "1", name: "John Smith", email: "john.smith@email.com" },
-  { id: "2", name: "Emma Wilson", email: "emma.wilson@email.com" },
-  { id: "3", name: "Michael Brown", email: "michael.brown@email.com" },
-];
+import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+} from "recharts";
+import API from "@/lib/axios";
+import { motion } from "framer-motion";
 
 export default function TrainerMemberDetails() {
+  const { id } = useParams(); 
   const [isEditing, setIsEditing] = useState(false);
-  const [assignedTrainer, setAssignedTrainer] = useState<Trainer | null>(
-    mockTrainers[0]
-  );
+  const [member, setMember] = useState<any>(null);
+  const [progressData, setProgressData] = useState<{ day: string; completed: number }[]>([]);
 
-  // original persisted member data
-  const [member, setMember] = useState({
-    fullName: "John Doe",
-    email: "john@example.com",
-    phone: "09000000000",
-    dob: "1990-01-01",
-    lastLogin: "2023-10-01 12:00:00",
-    gender: "male",
-    bio: "Short bio here",
-    goal: "Fitness and health improvement",
-    medicalNotes: "No known allergies",
-    routinesCreated: 3,
-    workoutSaved: 5,
-  });
+  useEffect(() => {
+    const fetchMember = async () => {
+      try {
+        const res = await API.get(`/trainer/members/${id}`);
+        setMember(res.data.member);
 
-  // temporary copy for editing
-  const [draft, setDraft] = useState(member);
+        const progressRes = await API.get(`/progress/member/${id}`);
+        const analytics = progressRes.data.analytics;
 
-  const handleAssignTrainer = (trainer: Trainer) => {
-    setAssignedTrainer(trainer);
-  };
+        const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        const data = weekDays.map((d) => ({ day: d, completed: 0 }));
 
-  const handleRemoveTrainer = () => {
-    setAssignedTrainer(null);
-  };
+        analytics.forEach((item: any) => {
+          if (item.status === "COMPLETED" && item.completedAt) {
+            const date = new Date(item.completedAt);
+            const dayName = weekDays[date.getDay()];
+            const idx = weekDays.indexOf(dayName);
+            if (idx >= 0) data[idx].completed += 1;
+          }
+        });
 
-  const handleEdit = () => {
-    setDraft(member); // copy current member into draft before editing
-    setIsEditing(true);
-  };
+        setProgressData(data);
+      } catch (err) {
+        console.error("Failed to fetch member or progress:", err);
+      }
+    };
 
-  const handleCancel = () => {
-    setIsEditing(false);
-    setDraft(member); // reset draft
-  };
-
-  const handleSave = () => {
-    setMember(draft); // persist changes
-    setIsEditing(false);
-  };
+    fetchMember();
+  }, [id]);
 
   const handleChange = (field: string, value: any) => {
-    setDraft((prev) => ({ ...prev, [field]: value }));
+    setMember((prev: any) => ({ ...prev, [field]: value }));
   };
 
+  const handleEdit = () => setIsEditing(true);
+  const handleCancel = () => setIsEditing(false);
+
+  const handleSave = async () => {
+    try {
+      await API.put(`/trainer/profile`, {
+        user: {
+          fullName: member.user.userName,
+          email: member.user.email,
+          gender: member.user.gender,
+          dateOfBirth: member.user.dateOfBirth,
+          bio: member.user.bio,
+        },
+      });
+      setIsEditing(false);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  if (!member) return <p>Loading member...</p>;
+
   return (
-    <div>
+         <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
+    <div className="p-6 space-y-6">
       <div className="flex items-center gap-5 mb-5">
         <Link to="/trainer/members">
           <Button variant="outline">
-            <ArrowLeft />
-            Back
+            <ArrowLeft /> Back
           </Button>
         </Link>
-        {!isEditing && (
-          <Button onClick={handleEdit}>Edit Profile</Button>
-        )}
       </div>
 
-      {/* Show Profile when not editing */}
-      {!isEditing && (
-        <div className="md:w-5/6 w-full mx-auto">
-          <MemberProfile />
+      <form>
+        <div className="my-5 font-semibold text-lg flex w-5/6 mx-auto">
+          Personal Information
         </div>
-      )}
-
-      {/* Show form when editing */}
-      {isEditing && (
-        <form>
-          <div className="my-5 font-semibold text-lg flex w-5/6 mx-auto">
-            Personal Information
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-4/5 mx-auto mb-5">
-            <div className="grid gap-3 mb-3">
-              <p>Full Name</p>
-              <Input
-                value={draft.fullName}
-                onChange={(e) => handleChange("fullName", e.target.value)}
-                type="text"
-                className="md:w-4/5 w-full text-sm"
-              />
-            </div>
-            <div className="grid gap-3 mb-3">
-              <p>Email</p>
-              <Input
-                value={draft.email}
-                onChange={(e) => handleChange("email", e.target.value)}
-                type="email"
-                className="md:w-4/5 w-full text-sm"
-              />
-            </div>
-            <div className="grid gap-3 mb-3">
-              <p>Phone Number</p>
-              <Input
-                value={draft.phone}
-                onChange={(e) => handleChange("phone", e.target.value)}
-                type="tel"
-                className="md:w-4/5 w-full text-sm"
-              />
-            </div>
-            <div className="grid gap-3 mb-3">
-              <p>Date of Birth</p>
-              <div className="md:w-4/5 w-full text-sm">
-                <Calendar28
-                  value={draft.dob}
-                  onChange={(val) => handleChange("dob", val)}
-                />
-              </div>
-            </div>
-            <div className="grid gap-3 mb-3">
-              <p>Last Login Date</p>
-              <Input
-                value={draft.lastLogin}
-                type="text"
-                className="md:w-4/5 w-full text-sm"
-                disabled
-              />
-            </div>
-            <div className="grid gap-3 mb-3">
-              <p>Gender</p>
-              <SelectGender
-                value={draft.gender}
-                onValueChange={(val) => handleChange("gender", val)}
-              />
-            </div>
-            <div className="grid gap-3 mb-3 md:col-span-2 md:w-9/10 w-full">
-              <p>Bio</p>
-              <Textarea
-                value={draft.bio}
-                onChange={(e) => handleChange("bio", e.target.value)}
-                className="w-full text-sm"
-              />
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-4/5 mx-auto mb-5">
+          <div className="grid gap-3 mb-3">
+            <p>Full Name</p>
+            <Input
+              value={member.user.userName || ""}
+              onChange={(e) =>
+                handleChange("user", { ...member.user, userName: e.target.value })
+              }
+              disabled={!isEditing}
+              className="md:w-4/5 w-full text-sm"
+            />
           </div>
 
-          {/* other info */}
-          <div className="my-5 font-semibold text-lg flex w-5/6 mx-auto">
-            Other Information
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-4/5 mx-auto mb-5">
-            <div className="grid gap-3 mb-3 md:col-span-2 md:w-9/10 w-full">
-              <p>Goal</p>
-              <Textarea
-                value={draft.goal}
-                onChange={(e) => handleChange("goal", e.target.value)}
-                className="w-full text-sm"
-              />
-            </div>
-            <div className="grid gap-3 mb-3 md:col-span-2 md:w-9/10 w-full">
-              <p>Medical Notes</p>
-              <Textarea
-                value={draft.medicalNotes}
-                onChange={(e) => handleChange("medicalNotes", e.target.value)}
-                className="w-full text-sm"
-              />
-            </div>
-
-            <div className="grid gap-3 mb-3">
-              <p>Routines Created</p>
-              <Input
-                value={draft.routinesCreated}
-                onChange={(e) => handleChange("routinesCreated", e.target.value)}
-                type="number"
-                className="md:w-4/5 w-full text-sm"
-              />
-            </div>
-
-            <div className="grid gap-3 mb-3">
-              <p>Workout Saved</p>
-              <Input
-                value={draft.workoutSaved}
-                onChange={(e) => handleChange("workoutSaved", e.target.value)}
-                type="number"
-                className="md:w-4/5 w-full text-sm"
-              />
-            </div>
-
-            {/* Assigned Trainer */}
-            <div className="grid gap-3 mb-3 md:col-span-2 md:w-9/10 w-full">
-              <AssignedTrainer
-                availableTrainers={mockTrainers}
-                assignedTrainer={assignedTrainer}
-                onAssignTrainer={handleAssignTrainer}
-                onRemoveTrainer={handleRemoveTrainer}
-                isEditing={true}
-              />
-            </div>
+          <div className="grid gap-3 mb-3">
+            <p>Email</p>
+            <Input
+              value={member.user.email || ""}
+              onChange={(e) =>
+                handleChange("user", { ...member.user, email: e.target.value })
+              }
+              type="email"
+              disabled={!isEditing}
+              className="md:w-4/5 w-full text-sm"
+            />
           </div>
 
+          <div className="grid gap-3 mb-3 md:w-4/5">
+            <p>Date of Birth</p>
+            <Calendar28
+              value={member.user.dateOfBirth || ""}
+              onChange={(val) =>
+                handleChange("user", { ...member.user, dateOfBirth: val })
+              }
+              disabled={!isEditing}
+            />
+          </div>
+
+          <div className="grid gap-3 mb-3">
+            <p>Gender</p>
+            <SelectGender
+              value={member.user.gender || ""}
+              onValueChange={(val) =>
+                handleChange("user", { ...member.user, gender: val })
+              }
+              disabled={!isEditing}
+            />
+          </div>
+
+          <div className="grid gap-3 mb-3 md:col-span-2 md:w-9/10">
+            <p>Bio</p>
+            <Textarea
+              value={member.user.bio || ""}
+              onChange={(e) =>
+                handleChange("user", { ...member.user, bio: e.target.value })
+              }
+              disabled={!isEditing}
+              className="w-full text-sm"
+            />
+          </div>
+        </div>
+
+        <div className="my-5 font-semibold text-lg flex w-5/6 mx-auto">
+          Other Information
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-4/5 mx-auto mb-5">
+          <div className="grid gap-3 mb-3 md:col-span-2 md:w-9/10">
+            <p>Goal</p>
+            <Textarea
+              value={member.goal || ""}
+              onChange={(e) => handleChange("goal", e.target.value)}
+              disabled={!isEditing}
+              className="w-full text-sm"
+            />
+          </div>
+
+          <div className="grid gap-3 mb-3 md:col-span-2 md:w-9/10">
+            <p>Medical Notes</p>
+            <Textarea
+              value={member.medicalNotes || ""}
+              onChange={(e) => handleChange("medicalNotes", e.target.value)}
+              disabled={!isEditing}
+              className="w-full text-sm"
+            />
+          </div>
+        </div>
+
+        {isEditing && (
           <div className="flex gap-4 w-4/5 mx-auto">
-            <Button type="button" onClick={handleSave}>
-              Save Changes
-            </Button>
-            <Button type="button" variant="outline" onClick={handleCancel}>
+            <Button onClick={handleSave}>Save Changes</Button>
+            <Button variant="outline" onClick={handleCancel}>
               Cancel
             </Button>
           </div>
-        </form>
-      )}
-    </div>
+        )}
+      </form>
+
+      {/* Weekly Progress Chart */}
+      <div className="w-4/5 mx-auto mb-5">
+        <Card className="border-primary">
+          <CardHeader>
+            <CardTitle>Weekly Routine Completion</CardTitle>
+          </CardHeader>
+          <CardContent className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={progressData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="day"
+                  label={{ value: "Day of Week", position: "insideBottom", offset: -5 }}
+                />
+                <YAxis
+                  label={{ value: "Completed Routines", angle: -90, position: "insideLeft" }}
+                />
+                <Tooltip />
+                <Line
+                  type="monotone"
+                  dataKey="completed"
+                  stroke="url(#gradientLine)"
+                  strokeWidth={3}
+                />
+                <defs>
+                  <linearGradient id="gradientLine" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#7e22ce" />
+                    <stop offset="50%" stopColor="#ec4899" />
+                    <stop offset="100%" stopColor="#f97316" />
+                  </linearGradient>
+                </defs>
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+      </div>
+      </motion.div>
   );
 }

@@ -13,7 +13,7 @@ export default function TrainerDashboardStatusCard() {
       <div>
         <Card className="gap-1 border-primary bg-primary/10 p-3">
           <CardHeader>
-            <p className="font-semibold">Active Members</p>
+            <p className="font-semibold">Assigned Members</p>
           </CardHeader>
           <CardContent>
             <CardTitle className="font-bold text-2xl bg-gradient-to-br from-purple-600 via-pink-500 via-red-500 to-orange-400 bg-clip-text text-transparent">156</CardTitle>
@@ -41,7 +41,7 @@ export default function TrainerDashboardStatusCard() {
       <div>
         <Card className="gap-1 border-primary bg-primary/10 p-3">
           <CardHeader>
-            <p className="font-semibold">Workout</p>
+            <p className="font-semibold">Workout Created</p>
           </CardHeader>
           <CardContent>
             <CardTitle className="font-bold text-2xl bg-gradient-to-br from-purple-600 via-pink-500 via-red-500 to-orange-400 bg-clip-text text-transparent">156</CardTitle>
@@ -55,7 +55,7 @@ export default function TrainerDashboardStatusCard() {
       <div>
         <Card className="gap-1 border-primary bg-primary/10 p-3">
           <CardHeader>
-            <p className="font-semibold">Clients</p>
+            <p className="font-semibold">Completed Routines</p>
           </CardHeader>
           <CardContent>
             <CardTitle className="font-bold text-2xl bg-gradient-to-br from-purple-600 via-pink-500 via-red-500 to-orange-400 bg-clip-text text-transparent">156</CardTitle>

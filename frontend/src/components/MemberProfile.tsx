@@ -4,7 +4,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Mail, Phone, Calendar, User, Calendar1, Mars, NotebookPen, Dumbbell, BicepsFlexed } from "lucide-react";
 
-// Mock member data - replace with actual data fetching
 const mockMemberData = {
   "1": {
     id: "1",
@@ -52,7 +51,6 @@ const mockMemberData = {
   },
 };
 
-// --- helper to render badge styles ---
 const renderStatusBadge = (status: string) => {
   switch (status.toLowerCase()) {
     case "active":

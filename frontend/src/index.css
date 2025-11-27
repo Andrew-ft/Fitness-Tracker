@@ -210,3 +210,12 @@
 .gridjs-table th, td, tr {
   text-align: center !important;
 }
+
+/* Add this in your global CSS if not using a plugin */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+}

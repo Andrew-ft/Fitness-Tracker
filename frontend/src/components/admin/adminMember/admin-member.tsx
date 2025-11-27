@@ -4,18 +4,23 @@ import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
 import AdminMemberTable from "../../MemberTable";
 import { useState } from "react";
+import { motion } from "framer-motion";  
 
 export default function AdminMember() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All"); // All, Active, Inactive
+  const [statusFilter, setStatusFilter] = useState("All");
 
   return (
-    <div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+    >
       <div className="mb-10 flex flex-wrap gap-10 items-center justify-between">
         <div>
           <h1 className="font-semibold text-2xl">Member Management</h1>
           <p className="text-sm opacity-50">
-             Manage all gym members, assign trainers, and monitor activity
+            Manage all gym members, assign trainers, and monitor activity
           </p>
         </div>
         <div>
@@ -31,18 +36,16 @@ export default function AdminMember() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <DropdownMenuCheckboxes
-          value={statusFilter}
-          onChange={(val) => setStatusFilter(val)}
-        />
       </div>
 
       <div>
+        {/* Pass statusFilter as prop too for future use */}
         <AdminMemberTable
           searchQuery={searchTerm}
-          statusFilter={statusFilter}
+          endpoint="/admin/members"
+          role="admin"
         />
       </div>
-    </div>
+    </motion.div>
   );
 }

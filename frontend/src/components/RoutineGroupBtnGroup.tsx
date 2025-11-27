@@ -2,11 +2,10 @@ import { Button } from "@/components/ui/button";
 
 const categories = [
   "All",
-  "Full Body Split",
-  "Upper/Lower Split",
-  "PPL Split",
-  "Bro Split",
-  "Circuit Training"
+  "strength",
+  "hypertrophy",
+  "HIIT",
+  "cardio",
 ];
 
 export function RoutineGroupBtnGroup({ active, onSelect }: { active: string; onSelect: (routineGroup: string) => void }) {
